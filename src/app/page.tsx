@@ -1,9 +1,5 @@
-import Dashboard from '@/components/dashboard';
+import LoginPage from '@/components/login-page';
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen w-full flex-col">
-      <Dashboard />
-    </main>
-  );
+  return <LoginPage />;
 }
