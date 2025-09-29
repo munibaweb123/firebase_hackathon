@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    // This is to make sure that the three.js library is not processed by webpack
+    // as it can cause issues with the server-side rendering
+    config.externals.push('three');
+    return config;
+  },
 };
 
 export default nextConfig;
