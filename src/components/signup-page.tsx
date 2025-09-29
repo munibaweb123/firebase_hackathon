@@ -61,8 +61,7 @@ export default function SignUpPage() {
       });
       router.push('/dashboard');
     } catch (error: any) {
-      let description =
-        'Could not create account. Please try again.';
+      let description = 'Could not create account. Please try again.';
       switch (error.code) {
         case 'auth/email-already-in-use':
           description = 'This email address is already in use.';
@@ -89,11 +88,11 @@ export default function SignUpPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="mx-auto max-w-sm">
+      <Card className="mx-auto max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign Up</CardTitle>
-          <CardDescription>
-            Enter your information to create an account
+          <CardTitle className="text-3xl font-bold text-center">Create Your Account</CardTitle>
+          <CardDescription className="text-center">
+            Enter your email and password to get started with TrackIt.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -137,7 +136,7 @@ export default function SignUpPage() {
           </Form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
-            <Link href="/" className="underline">
+            <Link href="/" className="font-semibold underline">
               Login
             </Link>
           </div>

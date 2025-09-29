@@ -73,11 +73,13 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="mx-auto max-w-sm">
+      <Card className="mx-auto max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
+          <CardTitle className="text-3xl font-bold text-center">
+            Welcome Back to TrackIt
+          </CardTitle>
+          <CardDescription className="text-center">
+            Enter your email and password to access your dashboard.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -121,7 +123,7 @@ export default function LoginPage() {
           </Form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="underline">
+            <Link href="/signup" className="font-semibold underline">
               Sign up
             </Link>
           </div>
