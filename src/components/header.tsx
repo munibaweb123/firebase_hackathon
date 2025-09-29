@@ -18,7 +18,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+  const defaultAvatar = PlaceHolderImages.find(p => p.id === 'default-avatar');
 
 
   const handleLogout = async () => {
@@ -45,15 +45,10 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-9 w-9">
-                {user && userAvatar ? (
                   <AvatarImage
-                    src={userAvatar.imageUrl}
-                    alt="User Avatar"
+                    src={user?.photoURL || defaultAvatar?.imageUrl}
+                    alt={user?.email || 'User Avatar'}
                   />
-                ) : <AvatarImage
-                    src={`https://i.pravatar.cc/150?u=${user?.email || 'guest'}`}
-                    alt={user?.email || 'User'}
-                  />}
                 <AvatarFallback>{user ? getInitials(user.email) : <UserIcon className="h-5 w-5" />}</AvatarFallback>
               </Avatar>
             </Button>

@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Header } from '@/components/header';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const defaultAvatar = PlaceHolderImages.find(p => p.id === 'default-avatar');
 
   if (!user) {
     return null;
@@ -27,7 +29,7 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.email || 'User'} />
+              <AvatarImage src={user.photoURL || defaultAvatar?.imageUrl} alt={user.email || 'User'} />
               <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
             </Avatar>
             <div>
