@@ -1,11 +1,16 @@
+
 'use client';
-import { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import Bot from '@/components/bot';
+
+import dynamic from 'next/dynamic';
 import Chat from '@/components/chat';
 import { Landmark } from 'lucide-react';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ThreeScene = dynamic(() => import('@/components/three-scene'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-full w-full" />,
+});
 
 export default function Home() {
   return (
@@ -17,20 +22,8 @@ export default function Home() {
         </Link>
       </div>
 
-      <Canvas camera={{ position: [0, 0.5, 3.5], fov: 45 }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1.5} />
-        <Suspense fallback={null}>
-          <Bot />
-        </Suspense>
-        <OrbitControls
-          enableZoom={false}
-          minPolarAngle={Math.PI / 4}
-          maxPolarAngle={(3 * Math.PI) / 4}
-          minAzimuthAngle={-Math.PI / 4}
-          maxAzimuthAngle={Math.PI / 4}
-        />
-      </Canvas>
+      <ThreeScene />
+      
       <div className="absolute bottom-0 left-0 right-0 p-4">
         <Chat />
       </div>
