@@ -1,16 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Landmark } from 'lucide-react';
 import Link from 'next/link';
-import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 
-export default async function Home() {
-  const user = await currentUser();
-
-  if (user) {
-    redirect('/dashboard');
-  }
-
+export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
@@ -22,7 +14,7 @@ export default async function Home() {
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href="/sign-in">Login</Link>
+            <Link href="/dashboard">Dashboard</Link>
           </Button>
           <Button asChild>
             <Link href="/sign-up">Sign Up</Link>
