@@ -1,6 +1,7 @@
 import { authMiddleware } from '@clerk/nextjs/server';
 
 export default authMiddleware({
+  // Ensure that Clerk cognizes the following routes as public.
   publicRoutes: ['/', '/sign-in', '/sign-up'],
 });
 
