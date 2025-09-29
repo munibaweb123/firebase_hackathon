@@ -14,9 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      publishableKey="pk_test_aW4tZmx5LTE0LmNsZXJrLmFjY291bnRzLmRldiQ"
-    >
+    <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
