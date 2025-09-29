@@ -87,13 +87,18 @@ export default function Chat() {
             render={({ field }) => (
               <FormItem className="flex-grow">
                 <FormControl>
-                  <Input placeholder="Ask Wally anything..." {...field} autoComplete="off" />
+                  <Input
+                    placeholder="Ask Wally anything..."
+                    {...field}
+                    autoComplete="off"
+                    suppressHydrationWarning
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" size="icon" disabled={loading}>
+          <Button type="submit" size="icon" disabled={loading} suppressHydrationWarning>
             <SendHorizonal />
           </Button>
         </form>
