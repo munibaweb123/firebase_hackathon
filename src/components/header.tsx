@@ -1,5 +1,4 @@
 'use client';
-import { UserButton } from '@clerk/nextjs';
 import { Landmark } from 'lucide-react';
 
 export function Header() {
@@ -11,9 +10,7 @@ export function Header() {
           TrackIt
         </h1>
       </div>
-      <div className="ml-auto flex items-center gap-4">
-        <UserButton />
-      </div>
+      <div className="ml-auto flex items-center gap-4"></div>
     </header>
   );
 }
