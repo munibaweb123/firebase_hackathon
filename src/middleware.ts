@@ -1,6 +1,9 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
 
-export default clerkMiddleware();
+export default clerkMiddleware({
+  publishableKey: 'pk_test_aW4tZmx5LTE0LmNsZXJrLmFjY291bnRzLmRldiQ',
+  secretKey: 'sk_test_Xix10NjBbEzqwcZ4MsWreINJc7bdH5rIIJAPMXIGCz'
+});
 
 export const config = {
   matcher: [

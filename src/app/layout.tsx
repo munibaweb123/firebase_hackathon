@@ -16,7 +16,6 @@ export default function RootLayout({
   return (
     <ClerkProvider
       publishableKey="pk_test_aW4tZmx5LTE0LmNsZXJrLmFjY291bnRzLmRldiQ"
-      secretKey="sk_test_Xix10NjBbEzqwcZ4MsWreINJc7bdH5rIIJAPMXIGCz"
     >
       <html lang="en" suppressHydrationWarning>
         <head>
