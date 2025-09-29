@@ -1,0 +1,14 @@
+diff --git a/node_modules/@react-three/fiber/package.json b/node_modules/@react-three/fiber/package.json
+index 54868e4..3585093 100644
+--- a/node_modules/@react-three/fiber/package.json
++++ b/node_modules/@react-three/fiber/package.json
+@@ -62,7 +62,7 @@
+     "zustand": ">=4.3.0"
+   },
+   "peerDependenciesMeta": {
+-    "react-reconciler": {
++    "@types/react-reconciler": {
+       "optional": true
+     }
+   },
+
