@@ -1,8 +1,4 @@
-import dynamic from 'next/dynamic';
-
-const LoginPage = dynamic(() => import('@/components/login-page'), {
-  ssr: false,
-});
+import LoginPage from '@/components/login-page';
 
 export default function Home() {
   return <LoginPage />;
