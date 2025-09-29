@@ -7,37 +7,55 @@ import { chat, ChatInput, ChatOutput } from '@/ai/flows/chat-flow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { SendHorizonal } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Bot, SendHorizonal, User } from 'lucide-react';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const formSchema = z.object({
   message: z.string().min(1, 'Message cannot be empty.'),
 });
 
 interface Message {
-  sender: 'user' | 'ai';
-  text: string;
+  role: 'user' | 'model';
+  content: string;
 }
 
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const defaultAvatar = PlaceHolderImages.find(p => p.id === 'default-avatar');
 
-  const form = useForm<ChatInput>({
+  const form = useForm<{ message: string }>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       message: '',
     },
   });
 
-  const onSubmit: SubmitHandler<ChatInput> = async (data) => {
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const onSubmit: SubmitHandler<{ message: string }> = async (data) => {
     setLoading(true);
-    setMessages((prev) => [...prev, { sender: 'user', text: data.message }]);
+    const newMessages: Message[] = [...messages, { role: 'user', content: data.message }];
+    setMessages(newMessages);
     form.reset();
 
     try {
-      const response: ChatOutput = await chat(data);
-      setMessages((prev) => [...prev, { sender: 'ai', text: response.message }]);
+      const chatInput: ChatInput = {
+        history: messages,
+        message: data.message,
+      };
+
+      const response: ChatOutput = await chat(chatInput);
+      setMessages((prev) => [...prev, { role: 'model', content: response.message }]);
 
       if (audioRef.current) {
         audioRef.current.src = response.audio;
@@ -45,39 +63,59 @@ export default function Chat() {
       }
     } catch (error) {
       console.error('Error getting AI response:', error);
-      setMessages((prev) => [...prev, { sender: 'ai', text: 'Sorry, I ran into an error.' }]);
+      setMessages((prev) => [...prev, { role: 'model', content: 'Sorry, I ran into an error.' }]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Ensure we have an audio element to play the responses
     if (!audioRef.current) {
       audioRef.current = new Audio();
     }
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 bg-background/50 backdrop-blur-sm rounded-lg border border-border">
-      <div className="h-40 overflow-y-auto mb-4 p-2 space-y-2">
+    <div className="max-w-2xl mx-auto p-4 bg-card/50 backdrop-blur-sm rounded-lg border border-border shadow-lg">
+       <div className="h-80 overflow-y-auto mb-4 p-4 space-y-4 rounded-lg bg-background/30">
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
+            {msg.role === 'model' && (
+              <Avatar className="h-8 w-8">
+                <AvatarFallback><Bot size={20} /></AvatarFallback>
+              </Avatar>
+            )}
             <div
-              className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-3 py-2 ${
-                msg.sender === 'user'
+              className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2 text-sm ${
+                msg.role === 'user'
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
+                  : 'bg-muted'
               }`}
             >
-              {msg.text}
+              {msg.content}
             </div>
+             {msg.role === 'user' && (
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={defaultAvatar?.imageUrl} />
+                <AvatarFallback><User size={20} /></AvatarFallback>
+              </Avatar>
+            )}
           </div>
         ))}
-        {loading && <div className="text-center text-muted-foreground">Thinking...</div>}
+         {loading && (
+          <div className="flex items-start gap-3 justify-start">
+             <Avatar className="h-8 w-8">
+                <AvatarFallback><Bot size={20} /></AvatarFallback>
+              </Avatar>
+            <div className="max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2 text-sm bg-muted flex items-center gap-2">
+              <span className="animate-pulse">...</span>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center gap-2">
@@ -92,6 +130,7 @@ export default function Chat() {
                     {...field}
                     autoComplete="off"
                     suppressHydrationWarning
+                    className="bg-background/80"
                   />
                 </FormControl>
                 <FormMessage />

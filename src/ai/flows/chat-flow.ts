@@ -11,13 +11,19 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
 
+const MessageSchema = z.object({
+  role: z.enum(['user', 'model']),
+  content: z.string(),
+});
+
 const ChatInputSchema = z.object({
-  message: z.string().describe('The user\'s message to the AI.'),
+  history: z.array(MessageSchema),
+  message: z.string().describe("The user's message to the AI."),
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
 const ChatOutputSchema = z.object({
-  message: z.string().describe('The AI\'s response message.'),
+  message: z.string().describe("The AI's response message."),
   audio: z.string().describe('The base64 encoded WAV audio of the AI\'s response.'),
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
@@ -60,14 +66,19 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatOutputSchema,
   },
   async input => {
+    const history = input.history.map(msg => ({
+        role: msg.role,
+        content: [{ text: msg.content }],
+    }));
+
     // Generate the text response
     const llmResponse = await ai.generate({
-      prompt: `You are a friendly AI assistant named Wally. Keep your responses concise and helpful.
-        User: ${input.message}
-        AI:`,
+      history,
+      prompt: input.message,
       config: {
         maxOutputTokens: 100,
       },
+      system: 'You are a friendly AI assistant named Wally. Keep your responses concise and helpful.',
     });
     const responseText = llmResponse.text;
 
