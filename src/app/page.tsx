@@ -22,7 +22,9 @@ export default function Home() {
         </Link>
       </div>
 
-      <ThreeScene />
+      <div className="absolute inset-0 z-0">
+        <ThreeScene />
+      </div>
       
       <div className="absolute bottom-0 left-0 right-0 p-4">
         <Chat />
