@@ -60,11 +60,26 @@ export default function SignUpPage() {
         description: 'Your account has been created.',
       });
       router.push('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
+      let description =
+        'Could not create account. Please try again.';
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          description = 'This email address is already in use.';
+          break;
+        case 'auth/invalid-email':
+          description = 'The email address is not valid.';
+          break;
+        case 'auth/operation-not-allowed':
+          description = 'Email/password accounts are not enabled.';
+          break;
+        case 'auth/weak-password':
+          description = 'The password is not strong enough.';
+          break;
+      }
       toast({
         title: 'Error',
-        description:
-          'Could not create account. The email might already be in use.',
+        description,
         variant: 'destructive',
       });
     } finally {
