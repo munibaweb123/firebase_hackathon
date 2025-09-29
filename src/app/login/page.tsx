@@ -74,7 +74,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle>Login</CardTitle>
           <CardDescription>
             Enter your email below to login to your account.
           </CardDescription>
@@ -92,6 +92,7 @@ export default function LoginPage() {
                       <Input
                         type="email"
                         placeholder="m@example.com"
+                        suppressHydrationWarning
                         {...field}
                       />
                     </FormControl>
@@ -106,13 +107,23 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        suppressHydrationWarning
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading}
+                suppressHydrationWarning
+              >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>
