@@ -8,7 +8,7 @@ export function Header() {
       <Link href="/" className="flex items-center gap-2">
         <Landmark className="h-6 w-6 text-primary" />
         <h1 className="text-xl font-bold tracking-tight text-foreground">
-          TrackIt
+          WealthWise
         </h1>
       </Link>
       <div className="ml-auto flex items-center gap-4"></div>
