@@ -1,9 +1,12 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { authMiddleware } from '@clerk/nextjs/server';
 
-export default clerkMiddleware({
-  publicRoutes: ['/'],
+export default authMiddleware({
+  publicRoutes: ['/', '/sign-in', '/sign-up'],
 });
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  // Protects all routes, including api/trpc.
+  // See https://clerk.com/docs/references/nextjs/auth-middleware
+  // for more information about configuring your Middleware
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
