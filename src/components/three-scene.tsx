@@ -1,12 +1,22 @@
 
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Bot from '@/components/bot';
 
 export default function ThreeScene() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <Canvas camera={{ position: [0, 0.5, 3.5], fov: 45 }}>
       <ambientLight intensity={0.5} />
