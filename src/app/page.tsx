@@ -65,15 +65,15 @@ const features = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-[#1C0E2B] to-[#241539]">
+    <div className="flex flex-col min-h-screen w-full dark:bg-gradient-to-br dark:from-[#1C0E2B] dark:to-[#241539]">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative w-full py-20 lg:py-32 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-pink-500/10" />
+          <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-primary/10 dark:to-pink-500/10" />
           <div className="container relative mx-auto grid lg:grid-cols-2 gap-12 items-center px-4 md:px-6">
             <div className="space-y-6 text-center lg:text-left">
-              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                 Take Control of Your{' '}
                 <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
                   Finances
@@ -85,12 +85,12 @@ export default function Home() {
                 and achieve your financial goals. Get started for free.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button asChild size="lg" className="bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 text-white border-0 shadow-lg">
+                <Button asChild size="lg" className="dark:bg-gradient-to-r dark:from-primary dark:to-violet-600 dark:hover:from-primary/90 dark:hover:to-violet-600/90 dark:text-white dark:border-0 dark:shadow-lg">
                   <Link href="/signup" className="flex items-center">
                     Get Started <ArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="border-card text-white bg-white/5 hover:bg-white/10 hover:text-white">
+                <Button asChild size="lg" variant="outline" className="dark:border-card dark:text-white dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-white">
                   <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
               </div>
@@ -112,7 +112,7 @@ export default function Home() {
         <section className="py-20 lg:py-24">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Why Choose WealthWise?
               </h2>
               <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -129,7 +129,7 @@ export default function Home() {
                   <div className={`relative inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r ${feature.color} mb-4`}>
                     <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="relative text-xl font-semibold text-white mb-2">
+                  <h3 className="relative text-xl font-semibold text-card-foreground mb-2">
                     {feature.title}
                   </h3>
                   <p className="relative text-muted-foreground">
@@ -149,7 +149,7 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-violet-600 mb-4">
                   <Mic className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                   Meet Wally, Your Voice Assistant
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground">
@@ -167,7 +167,7 @@ export default function Home() {
         <section id="faq" className="py-20 lg-py-24">
           <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Frequently Asked Questions
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
@@ -182,7 +182,7 @@ export default function Home() {
                     key={item.question}
                     className="bg-card border-border rounded-lg px-6 mb-4 hover:bg-accent/50 transition-colors"
                   >
-                    <AccordionTrigger className="text-lg font-medium text-left text-white hover:text-primary py-4">
+                    <AccordionTrigger className="text-lg font-medium text-left text-card-foreground hover:text-primary py-4">
                       {item.question}
                     </AccordionTrigger>
                     <AccordionContent className="text-base text-muted-foreground pb-4">
@@ -219,13 +219,13 @@ export default function Home() {
         <div className="container mx-auto px-4 md:px-6 text-center text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} WealthWise. All rights reserved.</p>
           <div className="mt-4 flex justify-center space-x-6">
-            <Link href="/privacy" className="text-muted-foreground hover:text-white transition-colors">
+            <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-muted-foreground hover:text-white transition-colors">
+            <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
               Terms of Service
             </Link>
-            <Link href="/contact" className="text-muted-foreground hover:text-white transition-colors">
+            <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
               Contact
             </Link>
           </div>
