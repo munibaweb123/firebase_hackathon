@@ -44,6 +44,7 @@ import { categories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
 import { Separator } from './ui/separator';
+import { Label } from './ui/label';
 
 interface AddTransactionDialogProps {
   open: boolean;
