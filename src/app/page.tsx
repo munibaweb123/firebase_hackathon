@@ -12,7 +12,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import Image from 'next/image';
-import { ArrowRight, Mic, Shield, Smartphone, TrendingUp, Sparkles, Wallet, BarChart } from 'lucide-react';
+import { ArrowRight, Mic, Shield, Smartphone, Sparkles, Wallet, BarChart } from 'lucide-react';
+import { Hero3D } from '@/components/hero-3d';
 
 const faqItems = [
   {
@@ -73,74 +74,12 @@ const stats = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
+    <div className="flex flex-col min-h-screen w-full bg-background dark:bg-background">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full py-12 lg:py-24 xl:py-32 overflow-hidden">
-          {/* Background Elements */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-pink-500/5 dark:from-primary/10 dark:to-pink-500/10" />
-          <div className="absolute top-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl"></div>
-          
-          <div className="container relative mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center px-4 md:px-6">
-            <div className="space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-4">
-                <Sparkles className="w-4 h-4" />
-                AI-Powered Finance Management
-              </div>
-              
-              <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
-                Take Control of Your{' '}
-                <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
-                  Finances
-                </span>
-              </h1>
-              
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                The smart, voice-powered way to track expenses, manage budgets, and achieve your financial goals.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-                <Button asChild size="lg" className="h-12 px-8 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
-                  <Link href="/signup" className="flex items-center gap-2">
-                    Get Started Free
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="h-12 px-8 text-base border-2 border-border hover:bg-accent hover:text-accent-foreground">
-                  <Link href="/dashboard" className="flex items-center gap-2">
-                    <Wallet className="w-4 h-4" />
-                    View Dashboard
-                  </Link>
-                </Button>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-8 max-w-md mx-auto lg:mx-0">
-                {stats.map((stat, index) => (
-                  <div key={index} className="text-center lg:text-left">
-                    <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Hero Image */}
-            <div className="relative aspect-video w-full">
-              <Image
-                src="/hero.png"
-                alt="AI robot interacting with financial data interfaces"
-                fill
-                className="object-contain"
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-                data-ai-hint="finance workspace"
-              />
-            </div>
-          </div>
-          
+        <section className="relative w-full h-[80vh] lg:h-screen overflow-hidden">
+           <Hero3D />
         </section>
 
         {/* Features Section */}
@@ -159,7 +98,7 @@ export default function Home() {
               {features.map((feature, index) => (
                 <div
                   key={feature.title}
-                  className="group relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 border border-border hover:border-primary/20 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-primary/5"
+                  className="group relative bg-card/50 dark:bg-card/50 backdrop-blur-sm rounded-3xl p-8 border border-border hover:border-primary/20 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-primary/5"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} rounded-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
                   
@@ -181,7 +120,7 @@ export default function Home() {
         </section>
 
         {/* Voice Agent Section */}
-        <section id="voice-agent" className="py-20 lg:py-28 bg-gradient-to-b from-card/30 to-background">
+        <section id="voice-agent" className="py-20 lg:py-28 bg-gradient-to-b from-card/30 to-background dark:from-card/30 dark:to-background">
           <div className="container mx-auto px-4 md:px-6">
             <div className="w-full max-w-6xl mx-auto">
               <div className="text-center mb-16">
@@ -198,7 +137,7 @@ export default function Home() {
                 </p>
               </div>
               
-              <div className="bg-card/50 backdrop-blur-sm rounded-3xl p-8 lg:p-12 border border-border shadow-2xl shadow-primary/5">
+              <div className="bg-card/50 dark:bg-card/50 backdrop-blur-sm rounded-3xl p-8 lg:p-12 border border-border shadow-2xl shadow-primary/5">
                 <VoiceAgent />
               </div>
             </div>
@@ -223,7 +162,7 @@ export default function Home() {
                   <AccordionItem 
                     value={`item-${index}`} 
                     key={item.question}
-                    className="bg-card/50 backdrop-blur-sm rounded-2xl px-6 border border-border hover:border-primary/20 transition-colors"
+                    className="bg-card/50 dark:bg-card/50 backdrop-blur-sm rounded-2xl px-6 border border-border hover:border-primary/20 transition-colors"
                   >
                     <AccordionTrigger className="text-lg font-semibold text-card-foreground hover:text-primary py-6 text-left">
                       {item.question}
@@ -272,7 +211,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-border bg-card/30">
+      <footer className="py-12 border-t border-border bg-card/30 dark:bg-card/30">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center">
             <p className="text-muted-foreground mb-6">
@@ -296,6 +235,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
-    
