@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import dynamic from 'next/dynamic';
-import { ArrowRight, Mic, Shield, Smartphone, Sparkles, BarChart } from 'lucide-react';
+import { ArrowRight, Mic, Shield, Smartphone, BarChart } from 'lucide-react';
 
 const Hero3D = dynamic(() => import('@/components/hero-3d').then(mod => mod.Hero3D), {
   ssr: false,
