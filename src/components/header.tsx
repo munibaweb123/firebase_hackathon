@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { ThemeToggle } from './theme-toggle';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -73,6 +74,7 @@ export function Header() {
       </nav>
 
       <div className="flex items-center gap-4">
+         <ThemeToggle />
         {/* User Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild suppressHydrationWarning>
