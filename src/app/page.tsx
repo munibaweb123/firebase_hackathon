@@ -1,6 +1,6 @@
 'use client';
 
-import Chat from '@/components/chat';
+import { VoiceAgent } from '@/components/voice-agent';
 import { Header } from '@/components/header';
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
       <Header />
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="w-full max-w-4xl">
-          <Chat />
+          <VoiceAgent />
         </div>
       </main>
     </div>
