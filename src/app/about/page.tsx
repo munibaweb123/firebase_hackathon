@@ -1,7 +1,17 @@
 'use client';
 
 import { Header } from '@/components/header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+
+const teamMembers = [
+  { name: 'Muniba Ahmed', role: 'Team Lead' },
+  { name: 'Nitoo Kumari', role: 'Team Member' },
+  { name: 'Sana Abid', role: 'Team Member' },
+  { name: 'Wania', role: 'Team Member' },
+  { name: 'Aksa', role: 'Team Member' },
+];
 
 export default function AboutPage() {
   return (
@@ -25,6 +35,26 @@ export default function AboutPage() {
             <p>
               We believe in the power of technology to simplify lives. That's why we've built WealthWise with a focus on user experience, powerful features, and the latest in AI to offer personalized financial advice.
             </p>
+            
+            <Separator className="my-6" />
+
+            <div className="text-center">
+              <h2 className="text-2xl font-bold">Meet the Team</h2>
+              <p className="text-muted-foreground">The passionate individuals behind WealthWise.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+              {teamMembers.map((member) => (
+                <div key={member.name} className="flex flex-col items-center text-center">
+                  <Avatar className="w-24 h-24 mb-4">
+                     <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <h3 className="font-semibold text-lg">{member.name}</h3>
+                  <p className="text-sm text-muted-foreground">{member.role}</p>
+                </div>
+              ))}
+            </div>
+
           </CardContent>
         </Card>
       </div>
