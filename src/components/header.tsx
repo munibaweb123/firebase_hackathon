@@ -23,10 +23,10 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
+  SheetClose,
 } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useState } from 'react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -39,7 +39,6 @@ export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const defaultAvatar = PlaceHolderImages.find(p => p.id === 'default-avatar');
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -51,10 +50,6 @@ export function Header() {
     return email.charAt(0).toUpperCase();
   };
   
-  const handleLinkClick = () => {
-    setIsSheetOpen(false);
-  };
-
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
       <Link href="/" className="flex items-center gap-2">
@@ -138,7 +133,7 @@ export function Header() {
         </DropdownMenu>
 
         {/* Mobile Menu */}
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden" suppressHydrationWarning>
               <Menu className="h-5 w-5" />
@@ -148,14 +143,14 @@ export function Header() {
           <SheetContent side="right">
             <nav className="grid gap-6 text-lg font-medium mt-8">
               {navLinks.map(link => (
+                <SheetClose asChild key={link.href}>
                   <Link
-                    key={link.href}
                     href={link.href}
                     className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                    onClick={handleLinkClick}
                   >
                     {link.label}
                   </Link>
+                </SheetClose>
               ))}
             </nav>
           </SheetContent>
