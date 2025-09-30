@@ -10,7 +10,7 @@ import {
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
-import { useRouter }from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -143,14 +143,13 @@ export function Header() {
           <SheetContent side="right">
             <nav className="grid gap-6 text-lg font-medium mt-8">
               {navLinks.map(link => (
-                <SheetClose asChild key={link.href}>
                   <Link
                     href={link.href}
+                    key={link.href}
                     className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   >
                     {link.label}
                   </Link>
-                </SheetClose>
               ))}
             </nav>
           </SheetContent>
