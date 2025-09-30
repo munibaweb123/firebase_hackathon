@@ -95,7 +95,7 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="relative aspect-video w-full max-w-lg mx-auto lg:max-w-none">
+            <div className="relative w-full max-w-lg mx-auto lg:max-w-none h-64 lg:h-auto lg:aspect-video">
               <div className="absolute -inset-4 bg-gradient-to-r from-[#9F6FFF] to-[#E83E8C] rounded-2xl blur-lg opacity-20"></div>
                 <Image
                 src="/her.png"
