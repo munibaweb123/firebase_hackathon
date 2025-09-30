@@ -70,7 +70,19 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
     });
 
     return transactions;
-  } catch (error) {
+  } catch (error: any) {
+    // Gracefully handle missing Firestore index
+    if (error.code === 'failed-precondition' && error.message.includes('index')) {
+        console.warn(
+        `A Firestore index is required for this query. 
+        Please create the index in your Firebase console. 
+        The error message should contain a direct link to create it. 
+        Falling back to an empty list for now.`,
+        error
+        );
+        return [];
+    }
+    
     console.error('Error getting transactions:', error);
     throw new Error('Failed to get transactions.');
   }
