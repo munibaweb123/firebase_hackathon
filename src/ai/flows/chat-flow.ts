@@ -107,7 +107,7 @@ const chatFlow = ai.defineFlow(
     });
 
     if (!media) {
-      // This can happen if the responseText is empty or contains unsupported characters.
+      // This can happen if the responseText contains unsupported characters.
       // We return the text message but no audio.
       return {
         message: responseText,
