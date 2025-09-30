@@ -38,14 +38,20 @@ const transcribeAudioFlow = ai.defineFlow(
     inputSchema: TranscribeAudioInputSchema,
     outputSchema: TranscribeAudioOutputSchema,
   },
-  async input => {
-    const { text } = await ai.generate({
+  async (input) => {
+    const llmResponse = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       prompt: [
-        { text: 'Transcribe the following audio:' },
         { media: { url: input.audio } },
+        { text: 'Transcribe the audio.' },
       ],
     });
+
+    const text = llmResponse.text;
+
+    if (!text) {
+      return { text: '' };
+    }
 
     return { text };
   }
