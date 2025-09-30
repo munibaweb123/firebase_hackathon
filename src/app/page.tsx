@@ -11,9 +11,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import Image from 'next/image';
-import { ArrowRight, Mic, Shield, Smartphone, Sparkles, Wallet, BarChart } from 'lucide-react';
-import { Hero3D } from '@/components/hero-3d';
+import dynamic from 'next/dynamic';
+import { ArrowRight, Mic, Shield, Smartphone, Sparkles, BarChart } from 'lucide-react';
+
+const Hero3D = dynamic(() => import('@/components/hero-3d').then(mod => mod.Hero3D), {
+  ssr: false,
+});
+
 
 const faqItems = [
   {
@@ -63,13 +67,6 @@ const features = [
     description: 'Access your finances anywhere, on any device',
     color: 'from-orange-400 to-yellow-500'
   }
-];
-
-const stats = [
-  { value: '10K+', label: 'Active Users' },
-  { value: '$2M+', label: 'Transactions Tracked' },
-  { value: '98%', label: 'User Satisfaction' },
-  { value: '24/7', label: 'Voice Support' }
 ];
 
 export default function Home() {
