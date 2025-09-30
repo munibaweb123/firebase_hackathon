@@ -80,6 +80,7 @@ export function VoiceAgent() {
       vapi.off('call-end', handleCallEnd);
       vapi.off('transcript', handleTranscript);
       vapi.off('function-call', handleFunctionCall);
+      vapi.removeAllListeners();
     };
   }, [user]);
 
