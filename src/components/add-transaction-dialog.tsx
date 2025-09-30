@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +33,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
@@ -41,6 +42,8 @@ import * as z from 'zod';
 import type { Transaction } from '@/lib/types';
 import { categories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
+import { Separator } from './ui/separator';
 
 interface AddTransactionDialogProps {
   open: boolean;
@@ -72,6 +75,8 @@ export function AddTransactionDialog({
   onTransactionAdd,
 }: AddTransactionDialogProps) {
   const { toast } = useToast();
+  const [aiLoading, setAiLoading] = useState(false);
+  const [naturalLanguageInput, setNaturalLanguageInput] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,6 +87,40 @@ export function AddTransactionDialog({
       date: new Date(),
     },
   });
+
+  const handleCategorize = async () => {
+    if (!naturalLanguageInput) {
+      toast({
+        variant: 'destructive',
+        title: 'Input Required',
+        description: 'Please describe your transaction first.',
+      });
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const result = await categorizeTransaction({ text: naturalLanguageInput });
+      if (result) {
+        form.setValue('description', result.description);
+        form.setValue('amount', result.amount);
+        form.setValue('category', result.category);
+        toast({
+          title: 'Success!',
+          description: 'Transaction details have been filled in.',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'AI Categorization Failed',
+        description: 'Could not categorize the transaction. Please fill it manually.',
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const newTransaction: Transaction = {
@@ -94,6 +133,7 @@ export function AddTransactionDialog({
       description: 'Your transaction has been added.',
     });
     form.reset();
+    setNaturalLanguageInput('');
     onOpenChange(false);
   }
 
@@ -103,9 +143,33 @@ export function AddTransactionDialog({
         <DialogHeader>
           <DialogTitle>Add Transaction</DialogTitle>
           <DialogDescription>
-            Log a new income or expense. Click save when you&apos;re done.
+            You can describe your transaction for the AI to categorize, or fill it manually.
           </DialogDescription>
         </DialogHeader>
+        
+        <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="natural-language-input">Describe Transaction</Label>
+               <div className="flex items-center gap-2">
+                <Input
+                  id="natural-language-input"
+                  placeholder="e.g., spent 25 dollars on lunch"
+                  value={naturalLanguageInput}
+                  onChange={(e) => setNaturalLanguageInput(e.target.value)}
+                  disabled={aiLoading}
+                />
+                <Button onClick={handleCategorize} disabled={aiLoading}>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  {aiLoading ? 'Analyzing...' : 'Categorize'}
+                </Button>
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            <p className="text-center text-sm text-muted-foreground">Or add manually</p>
+        </div>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -171,7 +235,7 @@ export function AddTransactionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
