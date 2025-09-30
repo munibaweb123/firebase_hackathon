@@ -123,9 +123,9 @@ export default function Chat() {
             } finally {
               setLoading(false);
             }
+             // Stop all media tracks to turn off the microphone indicator
+            stream.getTracks().forEach(track => track.stop());
           };
-           // Stop all media tracks to turn off the microphone indicator
-          stream.getTracks().forEach(track => track.stop());
         };
 
         mediaRecorderRef.current.start();
