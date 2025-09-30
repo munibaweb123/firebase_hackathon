@@ -2,6 +2,7 @@
 import React, { useRef, useState, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 import type { Group } from 'three';
 import Link from 'next/link';
 import { Button } from './ui/button';
