@@ -99,14 +99,13 @@ export default function Home() {
               </div>
             </div>
             {heroImage && (
-              <div className="relative">
+              <div className="relative aspect-[4/3] w-full max-w-lg mx-auto lg:max-w-none">
                 <div className="absolute -inset-4 bg-gradient-to-r from-[#9F6FFF] to-[#E83E8C] rounded-2xl blur-lg opacity-20"></div>
                 <Image
                   src={heroImage.imageUrl}
                   alt={heroImage.description}
-                  width={600}
-                  height={400}
-                  className="relative mx-auto rounded-xl shadow-2xl border border-[#382956]"
+                  fill
+                  className="relative object-contain rounded-xl shadow-2xl border border-[#382956]"
                   data-ai-hint={heroImage.imageHint}
                 />
               </div>
