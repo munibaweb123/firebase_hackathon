@@ -91,36 +91,42 @@ const chatFlow = ai.defineFlow(
     const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
 
     async function generateAudio(text: string): Promise<string> {
-        const { media } = await ai.generate({
-            model: 'googleai/gemini-2.5-flash-preview-tts',
-            config: {
-                responseModalities: ['AUDIO'],
-                speechConfig: {
-                    voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'achernar' },
+        try {
+            const { media } = await ai.generate({
+                model: 'googleai/gemini-2.5-flash-preview-tts',
+                config: {
+                    responseModalities: ['AUDIO'],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: { voiceName: 'achernar' },
+                        },
                     },
                 },
-            },
-            prompt: text,
-        });
+                prompt: text,
+            });
 
-        if (!media) {
-            return ''; // Return empty string if audio generation fails
+            if (!media) {
+                return ''; // Return empty string if audio generation fails
+            }
+
+            const audioBuffer = Buffer.from(
+                media.url.substring(media.url.indexOf(',') + 1),
+                'base64'
+            );
+            const wavBase64 = await toWav(audioBuffer);
+            return `data:audio/wav;base64,${wavBase64}`;
+        } catch (error) {
+            console.error('Error generating audio:', error);
+            // In case of any error (like rate limiting), return no audio.
+            return '';
         }
-
-        const audioBuffer = Buffer.from(
-            media.url.substring(media.url.indexOf(',') + 1),
-            'base64'
-        );
-        const wavBase64 = await toWav(audioBuffer);
-        return `data:audio/wav;base64,${wavBase64}`;
     }
 
     if (!responseText || responseText.trim() === '') {
-      const fallbackAudio = await generateAudio(fallbackMessage);
+      // Don't generate audio for the fallback to save API calls
       return {
         message: fallbackMessage,
-        audio: fallbackAudio,
+        audio: '',
       };
     }
     
