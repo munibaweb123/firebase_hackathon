@@ -1,3 +1,4 @@
+
 'use client';
 
 import { VoiceAgent } from '@/components/voice-agent';
@@ -11,7 +12,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import Image from 'next/image';
-import { ArrowRight, Mic, Shield, Smartphone, TrendingUp } from 'lucide-react';
+import { ArrowRight, Mic, Shield, Smartphone, TrendingUp, Sparkles, Wallet, BarChart } from 'lucide-react';
 
 const faqItems = [
   {
@@ -44,7 +45,7 @@ const features = [
     color: 'from-primary to-violet-500'
   },
   {
-    icon: TrendingUp,
+    icon: BarChart,
     title: 'Smart Analytics',
     description: 'Visualize your spending patterns with intuitive charts',
     color: 'from-teal-400 to-cyan-500'
@@ -63,76 +64,114 @@ const features = [
   }
 ];
 
+const stats = [
+  { value: '10K+', label: 'Active Users' },
+  { value: '$2M+', label: 'Transactions Tracked' },
+  { value: '98%', label: 'User Satisfaction' },
+  { value: '24/7', label: 'Voice Support' }
+];
+
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background dark:bg-gradient-to-br dark:from-[#1C0E2B] dark:to-[#241539]">
+    <div className="flex flex-col min-h-screen w-full bg-background">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full py-20 lg:py-32 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-pink-500/10" />
-          <div className="container relative mx-auto grid lg:grid-cols-2 gap-12 items-center px-4 md:px-6">
+        <section className="relative w-full py-12 lg:py-24 xl:py-32 overflow-hidden">
+          {/* Background Elements */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-pink-500/5 dark:from-primary/10 dark:to-pink-500/10" />
+          <div className="absolute top-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl"></div>
+          
+          <div className="container relative mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center px-4 md:px-6">
             <div className="space-y-6 text-center lg:text-left">
-              <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-4">
+                <Sparkles className="w-4 h-4" />
+                AI-Powered Finance Management
+              </div>
+              
+              <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
                 Take Control of Your{' '}
                 <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
                   Finances
-                </span>{' '}
-                with WealthWise
+                </span>
               </h1>
-              <p className="max-w-xl mx-auto lg:mx-0 text-lg text-muted-foreground">
-                The smart, voice-powered way to track expenses, manage budgets,
-                and achieve your financial goals. Get started for free.
+              
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                The smart, voice-powered way to track expenses, manage budgets, and achieve your financial goals.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-gradient-to-r dark:from-primary dark:to-violet-600 dark:hover:from-primary/90 dark:hover:to-violet-600/90 dark:text-white dark:border-0 dark:shadow-lg">
-                  <Link href="/signup" className="flex items-center">
-                    Get Started <ArrowRight className="ml-2 w-4 h-4" />
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                <Button asChild size="lg" className="h-12 px-8 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
+                  <Link href="/signup" className="flex items-center gap-2">
+                    Get Started Free
+                    <ArrowRight className="w-4 h-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="text-foreground border-border bg-background/50 hover:bg-accent hover:text-accent-foreground dark:border-card dark:text-white dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-white">
-                  <Link href="/dashboard">Go to Dashboard</Link>
+                <Button asChild size="lg" variant="outline" className="h-12 px-8 text-base border-2 border-border hover:bg-accent hover:text-accent-foreground">
+                  <Link href="/dashboard" className="flex items-center gap-2">
+                    <Wallet className="w-4 h-4" />
+                    View Dashboard
+                  </Link>
                 </Button>
               </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-8 max-w-md mx-auto lg:mx-0">
+                {stats.map((stat, index) => (
+                  <div key={index} className="text-center lg:text-left">
+                    <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="relative w-full max-w-lg mx-auto lg:max-w-none h-64 lg:h-auto lg:aspect-video">
-              <div className="absolute -inset-4 bg-gradient-to-r from-primary to-pink-500 rounded-2xl blur-2xl opacity-30 dark:opacity-50"></div>
-                <Image
+
+            {/* Hero Image */}
+            <div className="relative aspect-video w-full">
+              <Image
                 src="/hero.png"
                 alt="AI robot interacting with financial data interfaces"
                 fill
-                className="relative object-contain rounded-xl shadow-2xl"
-                data-ai-hint="AI finance"
+                className="object-contain"
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+                data-ai-hint="AI finance assistant showing financial analytics dashboard"
               />
             </div>
           </div>
+          
         </section>
 
         {/* Features Section */}
-        <section className="py-20 lg:py-24">
+        <section className="py-20 lg:py-28">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl mb-6">
                 Why Choose WealthWise?
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-                Experience the future of personal finance management with our innovative features
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Experience the future of personal finance management with our innovative features designed for modern life.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
               {features.map((feature, index) => (
                 <div
                   key={feature.title}
-                  className="group relative bg-card rounded-2xl p-6 hover:bg-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/10"
+                  className="group relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 border border-border hover:border-primary/20 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-primary/5"
                 >
-                   <div className={`absolute -inset-px bg-gradient-to-r ${feature.color} rounded-2xl opacity-0 group-hover:opacity-50 transition-opacity duration-300`}></div>
-                  <div className={`relative inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r ${feature.color} mb-4`}>
-                    <feature.icon className="w-6 h-6 text-white" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} rounded-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
+                  
+                  <div className={`relative inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-r ${feature.color} mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="relative text-xl font-semibold text-card-foreground mb-2">
+                  
+                  <h3 className="relative text-xl font-semibold text-card-foreground mb-3">
                     {feature.title}
                   </h3>
-                  <p className="relative text-muted-foreground">
+                  
+                  <p className="relative text-muted-foreground leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -142,21 +181,24 @@ export default function Home() {
         </section>
 
         {/* Voice Agent Section */}
-        <section id="voice-agent" className="py-20 lg:py-24 bg-card/50">
+        <section id="voice-agent" className="py-20 lg:py-28 bg-gradient-to-b from-card/30 to-background">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="w-full max-w-4xl mx-auto">
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-violet-600 mb-4">
-                  <Mic className="w-8 h-8 text-white" />
+            <div className="w-full max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r from-primary to-violet-600 mb-6 shadow-lg">
+                  <Mic className="w-10 h-10 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                
+                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl mb-6">
                   Meet Wally, Your Voice Assistant
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground">
-                  Managing your money is now as easy as talking. Just tell Wally about your transactions.
+                
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  Managing your money is now as easy as talking. Just tell Wally about your transactions and watch the magic happen.
                 </p>
               </div>
-              <div className="bg-card rounded-2xl p-8 border border-border shadow-2xl shadow-primary/10">
+              
+              <div className="bg-card/50 backdrop-blur-sm rounded-3xl p-8 lg:p-12 border border-border shadow-2xl shadow-primary/5">
                 <VoiceAgent />
               </div>
             </div>
@@ -164,28 +206,30 @@ export default function Home() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-20 lg-py-24">
+        <section id="faq" className="py-20 lg:py-28">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <div className="mx-auto max-w-4xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl mb-6">
                 Frequently Asked Questions
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Find answers to common questions about WealthWise.
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Everything you need to know about WealthWise and how it can transform your financial life.
               </p>
             </div>
-            <div className="mx-auto mt-12 max-w-3xl">
-              <Accordion type="single" collapsible className="w-full">
+            
+            <div className="mx-auto mt-16 max-w-3xl">
+              <Accordion type="single" collapsible className="w-full space-y-4">
                 {faqItems.map((item, index) => (
                   <AccordionItem 
                     value={`item-${index}`} 
                     key={item.question}
-                    className="bg-card border-border rounded-lg px-6 mb-4 hover:bg-accent/50 transition-colors"
+                    className="bg-card/50 backdrop-blur-sm rounded-2xl px-6 border border-border hover:border-primary/20 transition-colors"
                   >
-                    <AccordionTrigger className="text-lg font-medium text-left text-card-foreground hover:text-primary py-4">
+                    <AccordionTrigger className="text-lg font-semibold text-card-foreground hover:text-primary py-6 text-left">
                       {item.question}
                     </AccordionTrigger>
-                    <AccordionContent className="text-base text-muted-foreground pb-4">
+                    
+                    <AccordionContent className="text-base text-muted-foreground pb-6 leading-relaxed">
                       {item.answer}
                     </AccordionContent>
                   </AccordionItem>
@@ -196,41 +240,61 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 lg:py-24">
+        <section className="py-20 lg:py-28">
           <div className="container mx-auto px-4 md:px-6 text-center">
-            <div className="max-w-4xl mx-auto bg-gradient-to-r from-primary via-violet-600 to-pink-500 rounded-3xl p-12">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">
-                Ready to Transform Your Financial Journey?
-              </h2>
-              <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-                Join thousands of users who are already taking control of their finances with WealthWise.
-              </p>
-              <Button asChild size="lg" className="bg-white text-primary hover:bg-gray-100 border-0 shadow-lg">
-                <Link href="/signup" className="flex items-center">
-                  Start Your Free Trial <ArrowRight className="ml-2 w-4 h-4" />
-                </Link>
-              </Button>
+            <div className="max-w-5xl mx-auto bg-gradient-to-r from-primary via-violet-600 to-pink-500 rounded-2xl p-12 lg:p-16 relative overflow-hidden">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/10 to-transparent"></div>
+              
+              <div className="relative z-10">
+                <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl mb-6">
+                  Ready to Transform Your Financial Journey?
+                </h2>
+                
+                <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
+                  Join thousands of users who are already taking control of their finances with WealthWise. Start your free trial today.
+                </p>
+                
+                <Button asChild size="lg" className="h-14 px-10 text-base bg-white text-primary hover:bg-gray-50 border-0 shadow-2xl hover:scale-105 transition-transform">
+                  <Link href="/signup" className="flex items-center gap-3">
+                    Start Your Free Trial
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </Button>
+                
+                <p className="text-white/70 text-sm mt-6">
+                  No credit card required • 14-day free trial • Cancel anytime
+                </p>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="py-8 border-t border-border">
-        <div className="container mx-auto px-4 md:px-6 text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} WealthWise. All rights reserved.</p>
-          <div className="mt-4 flex justify-center space-x-6">
-            <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-              Terms of Service
-            </Link>
-            <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
-              Contact
-            </Link>
+      {/* Footer */}
+      <footer className="py-12 border-t border-border bg-card/30">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center">
+            <p className="text-muted-foreground mb-6">
+              &copy; {new Date().getFullYear()} WealthWise. All rights reserved.
+            </p>
+            
+            <div className="flex justify-center space-x-8">
+              <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors duration-200">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors duration-200">
+                Terms of Service
+              </Link>
+              <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors duration-200">
+                Contact
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
     </div>
   );
 }
+
+    
