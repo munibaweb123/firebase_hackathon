@@ -24,22 +24,22 @@ export default function ContactPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="first-name">First Name</Label>
-                  <Input id="first-name" placeholder="John" />
+                  <Input id="first-name" placeholder="John" suppressHydrationWarning />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last-name">Last Name</Label>
-                  <Input id="last-name" placeholder="Doe" />
+                  <Input id="last-name" placeholder="Doe" suppressHydrationWarning />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="john.doe@example.com" />
+                <Input id="email" type="email" placeholder="john.doe@example.com" suppressHydrationWarning />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
-                <Textarea id="message" placeholder="Your message..." />
+                <Textarea id="message" placeholder="Your message..." suppressHydrationWarning />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" suppressHydrationWarning>
                 Send Message
               </Button>
             </form>
