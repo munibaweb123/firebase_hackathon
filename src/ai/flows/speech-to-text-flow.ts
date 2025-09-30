@@ -39,10 +39,11 @@ const transcribeAudioFlow = ai.defineFlow(
     outputSchema: TranscribeAudioOutputSchema,
   },
   async input => {
-    const { text } = await ai.transcribe({
-      media: {
-        url: input.audio,
-      },
+    const { text } = await ai.generate({
+      prompt: [
+        { text: 'Transcribe the following audio:' },
+        { media: { url: input.audio } },
+      ],
     });
 
     return { text };
