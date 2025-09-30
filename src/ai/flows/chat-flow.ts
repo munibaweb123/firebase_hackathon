@@ -72,59 +72,64 @@ const chatFlow = ai.defineFlow(
       role: msg.role,
       content: [{text: msg.content}],
     }));
+    
+    // Clean user input to remove transcription artifacts
+    const cleanedMessage = input.message.replace(/\[.*?\]/g, '').trim();
 
     // Generate the text response
     const llmResponse = await ai.generate({
       history,
-      prompt: input.message,
+      prompt: cleanedMessage,
       config: {
         maxOutputTokens: 100,
       },
       system:
-        'You are a friendly AI assistant named Wally. Keep your responses concise and helpful.',
+        'You are Wally, a helpful financial voice assistant. Always answer in clear, simple English.',
     });
     const responseText = llmResponse.text;
+    
+    const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
 
-    if (!responseText) {
-      return {
-        message: "I'm sorry, I couldn't generate a response.",
-        audio: '',
-      };
+    async function generateAudio(text: string): Promise<string> {
+        const { media } = await ai.generate({
+            model: 'googleai/gemini-2.5-flash-preview-tts',
+            config: {
+                responseModalities: ['AUDIO'],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'achernar' },
+                    },
+                },
+            },
+            prompt: text,
+        });
+
+        if (!media) {
+            return ''; // Return empty string if audio generation fails
+        }
+
+        const audioBuffer = Buffer.from(
+            media.url.substring(media.url.indexOf(',') + 1),
+            'base64'
+        );
+        const wavBase64 = await toWav(audioBuffer);
+        return `data:audio/wav;base64,${wavBase64}`;
     }
 
-    // Generate the audio response
-    const {media} = await ai.generate({
-      model: 'googleai/gemini-2.5-flash-preview-tts',
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: {voiceName: 'achernar'},
-          },
-        },
-      },
-      prompt: responseText,
-    });
-
-    if (!media) {
-      // This can happen if the responseText contains unsupported characters.
-      // We return the text message but no audio.
+    if (!responseText || responseText.trim() === '') {
+      const fallbackAudio = await generateAudio(fallbackMessage);
       return {
-        message: responseText,
-        audio: '',
+        message: fallbackMessage,
+        audio: fallbackAudio,
       };
     }
-
-    const audioBuffer = Buffer.from(
-      media.url.substring(media.url.indexOf(',') + 1),
-      'base64'
-    );
-
-    const wavBase64 = await toWav(audioBuffer);
+    
+    // Generate the audio for the valid response
+    const responseAudio = await generateAudio(responseText);
 
     return {
       message: responseText,
-      audio: `data:audio/wav;base64,${wavBase64}`,
+      audio: responseAudio,
     };
   }
 );
