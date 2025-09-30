@@ -10,7 +10,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import { ArrowRight, Mic, Shield, Smartphone, TrendingUp } from 'lucide-react';
 
@@ -65,8 +64,6 @@ const features = [
 ];
 
 export default function Home() {
-  const heroImage = PlaceHolderImages.find(p => p.id === 'homepage-hero');
-
   return (
     <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-[#1C0E2B] to-[#241539]">
       <Header />
@@ -98,18 +95,16 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            {heroImage && (
-              <div className="relative aspect-video w-full max-w-lg mx-auto lg:max-w-none">
-                <div className="absolute -inset-4 bg-gradient-to-r from-[#9F6FFF] to-[#E83E8C] rounded-2xl blur-lg opacity-20"></div>
-                 <Image
-                  src={heroImage.imageUrl}
-                  alt={heroImage.description}
-                  fill
-                  className="relative object-contain rounded-xl shadow-2xl border border-[#382956]"
-                  data-ai-hint={heroImage.imageHint}
-                />
-              </div>
-            )}
+            <div className="relative aspect-video w-full max-w-lg mx-auto lg:max-w-none">
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#9F6FFF] to-[#E83E8C] rounded-2xl blur-lg opacity-20"></div>
+                <Image
+                src="/her.png"
+                alt="AI robot interacting with financial data interfaces"
+                fill
+                className="relative object-contain rounded-xl shadow-2xl border border-[#382956]"
+                data-ai-hint="AI finance"
+              />
+            </div>
           </div>
         </section>
 
@@ -238,5 +233,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
