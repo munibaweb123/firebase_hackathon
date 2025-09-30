@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Vapi from '@vapi-ai/web';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Mic, MicOff } from 'lucide-react';
 import { Badge } from './ui/badge';
 
+// Initialize Vapi once outside the component
 const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY!);
 
 interface TranscriptMessage {
@@ -18,28 +19,31 @@ export function VoiceAgent() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
   const { user } = useAuth();
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    vapi.on('call-start', () => {
+    // Scroll to the bottom whenever transcript changes
+    transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [transcript]);
+
+  useEffect(() => {
+    const handleCallStart = () => {
       setIsSessionActive(true);
       setTranscript([]);
-    });
+    };
 
-    vapi.on('call-end', () => {
+    const handleCallEnd = () => {
       setIsSessionActive(false);
-    });
+    };
 
-    vapi.on('transcript', (message) => {
-      if (message.type === 'transcript') {
+    const handleTranscript = (message: any) => {
+      if (message.type === 'transcript' && message.transcriptType === 'final') {
         const role = message.role === 'assistant' ? 'bot' : 'user';
-        // Only update if the transcript is final
-        if (message.transcriptType === 'final') {
-           setTranscript((prev) => [...prev, { role, transcript: message.transcript }]);
-        }
+        setTranscript((prev) => [...prev, { role, transcript: message.transcript }]);
       }
-    });
+    };
 
-     vapi.on('function-call', async (functionCall) => {
+    const handleFunctionCall = async (functionCall: any) => {
       if (user) {
         try {
           const idToken = await user.getIdToken();
@@ -49,7 +53,7 @@ export function VoiceAgent() {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${idToken}`,
             },
-            body: JSON.stringify(functionCall),
+            body: JSON.stringify({ functionCall }),
           });
 
           if (!response.ok) {
@@ -62,10 +66,20 @@ export function VoiceAgent() {
       } else {
         console.log('User not authenticated. Cannot process function call.');
       }
-    });
+    };
+    
+    // Subscribe to Vapi events
+    vapi.on('call-start', handleCallStart);
+    vapi.on('call-end', handleCallEnd);
+    vapi.on('transcript', handleTranscript);
+    vapi.on('function-call', handleFunctionCall);
 
+    // Cleanup function to remove listeners
     return () => {
-      vapi.removeAllListeners();
+      vapi.off('call-start', handleCallStart);
+      vapi.off('call-end', handleCallEnd);
+      vapi.off('transcript', handleTranscript);
+      vapi.off('function-call', handleFunctionCall);
     };
   }, [user]);
 
@@ -95,15 +109,16 @@ export function VoiceAgent() {
             <MicOff className="mr-2" /> Stop Session
           </Button>
         </div>
-        <div className="space-y-2 p-4 border rounded-lg h-64 overflow-y-auto bg-muted/50">
+        <div className="space-y-4 p-4 border rounded-lg h-64 overflow-y-auto bg-muted/50">
            {transcript.map((item, index) => (
-            <div key={index} className="flex gap-2">
-              <Badge variant={item.role === 'user' ? 'secondary' : 'outline'}>
+            <div key={index} className="flex items-start gap-3">
+              <Badge variant={item.role === 'user' ? 'secondary' : 'outline'} className="mt-1">
                 {item.role === 'user' ? 'You' : 'Wally'}
               </Badge>
-              <p>{item.transcript}</p>
+              <p className="flex-1">{item.transcript}</p>
             </div>
           ))}
+           <div ref={transcriptEndRef} />
         </div>
       </CardContent>
     </Card>
