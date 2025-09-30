@@ -81,6 +81,13 @@ const chatFlow = ai.defineFlow(
       system: 'You are a friendly AI assistant named Wally. Keep your responses concise and helpful.',
     });
     const responseText = llmResponse.text;
+    
+    if (!responseText) {
+      return {
+        message: "I'm sorry, I couldn't generate a response.",
+        audio: '',
+      };
+    }
 
     // Generate the audio response
     const {media} = await ai.generate({
