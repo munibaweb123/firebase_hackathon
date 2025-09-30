@@ -136,7 +136,7 @@ export default function Home() {
                 className="object-contain"
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"
-                data-ai-hint="AI finance assistant showing financial analytics dashboard"
+                data-ai-hint="finance workspace"
               />
             </div>
           </div>
@@ -297,4 +297,5 @@ export default function Home() {
   );
 }
 
+    
     
