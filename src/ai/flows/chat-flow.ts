@@ -81,7 +81,7 @@ const chatFlow = ai.defineFlow(
       history,
       prompt: cleanedMessage,
       config: {
-        maxOutputTokens: 100,
+        maxOutputTokens: 256,
       },
       system:
         'You are Wally, a helpful financial voice assistant. Always answer in clear, simple English.',
