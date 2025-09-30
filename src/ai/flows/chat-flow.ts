@@ -68,74 +68,82 @@ const chatFlow = ai.defineFlow(
     outputSchema: ChatOutputSchema,
   },
   async input => {
-    const history = input.history.map(msg => ({
-      role: msg.role,
-      content: [{text: msg.content}],
-    }));
-    
-    // Clean user input to remove transcription artifacts
-    const cleanedMessage = input.message.replace(/\[.*?\]/g, '').trim();
+    try {
+      const history = input.history.map(msg => ({
+        role: msg.role,
+        content: [{text: msg.content}],
+      }));
 
-    // Generate the text response
-    const llmResponse = await ai.generate({
-      history,
-      prompt: cleanedMessage,
-      config: {
-        maxOutputTokens: 256,
-      },
-      system:
-        'You are Wally, a helpful financial voice assistant. Always answer in clear, simple English.',
-    });
-    const responseText = llmResponse.text;
-    
-    const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
+      // Clean user input to remove transcription artifacts
+      const cleanedMessage = input.message.replace(/\[.*?\]/g, '').trim();
 
-    async function generateAudio(text: string): Promise<string> {
+      // Generate the text response
+      const llmResponse = await ai.generate({
+        history,
+        prompt: cleanedMessage,
+        config: {
+          maxOutputTokens: 256,
+        },
+        system:
+          'You are Wally, a helpful financial voice assistant. Always answer in clear, simple English.',
+      });
+      const responseText = llmResponse.text;
+
+      const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
+
+      async function generateAudio(text: string): Promise<string> {
         try {
-            const { media } = await ai.generate({
-                model: 'googleai/gemini-2.5-flash-preview-tts',
-                config: {
-                    responseModalities: ['AUDIO'],
-                    speechConfig: {
-                        voiceConfig: {
-                            prebuiltVoiceConfig: { voiceName: 'achernar' },
-                        },
-                    },
+          const {media} = await ai.generate({
+            model: 'googleai/gemini-2.5-flash-preview-tts',
+            config: {
+              responseModalities: ['AUDIO'],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: {voiceName: 'achernar'},
                 },
-                prompt: text,
-            });
+              },
+            },
+            prompt: text,
+          });
 
-            if (!media) {
-                return ''; // Return empty string if audio generation fails
-            }
+          if (!media) {
+            return ''; // Return empty string if audio generation fails
+          }
 
-            const audioBuffer = Buffer.from(
-                media.url.substring(media.url.indexOf(',') + 1),
-                'base64'
-            );
-            const wavBase64 = await toWav(audioBuffer);
-            return `data:audio/wav;base64,${wavBase64}`;
+          const audioBuffer = Buffer.from(
+            media.url.substring(media.url.indexOf(',') + 1),
+            'base64'
+          );
+          const wavBase64 = await toWav(audioBuffer);
+          return `data:audio/wav;base64,${wavBase64}`;
         } catch (error) {
-            console.error('Error generating audio:', error);
-            // In case of any error (like rate limiting), return no audio.
-            return '';
+          console.error('Error generating audio:', error);
+          // In case of any error (like rate limiting), return no audio.
+          return '';
         }
-    }
+      }
 
-    if (!responseText || responseText.trim() === '') {
-      // Don't generate audio for the fallback to save API calls
+      if (!responseText || responseText.trim() === '') {
+        // Don't generate audio for the fallback to save API calls
+        return {
+          message: fallbackMessage,
+          audio: '',
+        };
+      }
+
+      // Generate the audio for the valid response
+      const responseAudio = await generateAudio(responseText);
+
       return {
-        message: fallbackMessage,
+        message: responseText,
+        audio: responseAudio,
+      };
+    } catch (error) {
+      console.error('An unexpected error occurred in the chat flow:', error);
+      return {
+        message: 'Sorry, I ran into an unexpected issue. Please try again.',
         audio: '',
       };
     }
-    
-    // Generate the audio for the valid response
-    const responseAudio = await generateAudio(responseText);
-
-    return {
-      message: responseText,
-      audio: responseAudio,
-    };
   }
 );
