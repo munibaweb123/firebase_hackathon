@@ -39,7 +39,7 @@ import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { Transaction } from '@/lib/types';
+import type { TransactionData } from '@/lib/types';
 import { categories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
@@ -49,7 +49,7 @@ import { Label } from './ui/label';
 interface AddTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTransactionAdd: (transaction: Transaction) => void;
+  onTransactionAdd: (transaction: TransactionData) => void;
 }
 
 const formSchema = z.object({
@@ -124,11 +124,7 @@ export function AddTransactionDialog({
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const newTransaction: Transaction = {
-      id: new Date().toISOString(),
-      ...values,
-    };
-    onTransactionAdd(newTransaction);
+    onTransactionAdd(values);
     toast({
       title: 'Success!',
       description: 'Your transaction has been added.',
