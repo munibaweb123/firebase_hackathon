@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useState } from 'react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -38,6 +39,7 @@ const navLinks = [
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const defaultAvatar = PlaceHolderImages.find(p => p.id === 'default-avatar');
 
   const handleLogout = async () => {
@@ -133,7 +135,7 @@ export function Header() {
         </DropdownMenu>
 
         {/* Mobile Menu */}
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden" suppressHydrationWarning>
               <Menu className="h-5 w-5" />
