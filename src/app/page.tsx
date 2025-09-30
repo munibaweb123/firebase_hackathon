@@ -65,12 +65,12 @@ const features = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen w-full dark:bg-gradient-to-br dark:from-[#1C0E2B] dark:to-[#241539]">
+    <div className="flex flex-col min-h-screen w-full bg-background dark:bg-gradient-to-br dark:from-[#1C0E2B] dark:to-[#241539]">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative w-full py-20 lg:py-32 overflow-hidden">
-          <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-primary/10 dark:to-pink-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-pink-500/10" />
           <div className="container relative mx-auto grid lg:grid-cols-2 gap-12 items-center px-4 md:px-6">
             <div className="space-y-6 text-center lg:text-left">
               <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
@@ -85,23 +85,23 @@ export default function Home() {
                 and achieve your financial goals. Get started for free.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button asChild size="lg" className="dark:bg-gradient-to-r dark:from-primary dark:to-violet-600 dark:hover:from-primary/90 dark:hover:to-violet-600/90 dark:text-white dark:border-0 dark:shadow-lg">
+                <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-gradient-to-r dark:from-primary dark:to-violet-600 dark:hover:from-primary/90 dark:hover:to-violet-600/90 dark:text-white dark:border-0 dark:shadow-lg">
                   <Link href="/signup" className="flex items-center">
                     Get Started <ArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="dark:border-card dark:text-white dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-white">
+                <Button asChild size="lg" variant="outline" className="text-foreground border-border bg-background/50 hover:bg-accent hover:text-accent-foreground dark:border-card dark:text-white dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-white">
                   <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
               </div>
             </div>
             <div className="relative w-full max-w-lg mx-auto lg:max-w-none h-64 lg:h-auto lg:aspect-video">
-              <div className="absolute -inset-4 bg-gradient-to-r from-primary to-pink-500 rounded-2xl blur-2xl opacity-30"></div>
+              <div className="absolute -inset-4 bg-gradient-to-r from-primary to-pink-500 rounded-2xl blur-2xl opacity-30 dark:opacity-50"></div>
                 <Image
                 src="/hero.png"
                 alt="AI robot interacting with financial data interfaces"
                 fill
-                className="relative object-contain rounded-xl shadow-2xl border border-card"
+                className="relative object-contain rounded-xl shadow-2xl"
                 data-ai-hint="AI finance"
               />
             </div>
