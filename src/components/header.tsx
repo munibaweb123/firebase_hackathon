@@ -77,7 +77,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         {/* User Dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild suppressHydrationWarning>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-9 w-9">
                 <AvatarImage
@@ -137,7 +137,7 @@ export function Header() {
         {/* Mobile Menu */}
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="md:hidden">
+            <Button variant="outline" size="icon" className="md:hidden" suppressHydrationWarning>
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open menu</span>
             </Button>
