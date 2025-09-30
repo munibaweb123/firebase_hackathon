@@ -24,7 +24,9 @@ export type ChatInput = z.infer<typeof ChatInputSchema>;
 
 const ChatOutputSchema = z.object({
   message: z.string().describe("The AI's response message."),
-  audio: z.string().describe('The base64 encoded WAV audio of the AI\'s response.'),
+  audio: z
+    .string()
+    .describe("The base64 encoded WAV audio of the AI's response."),
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 
@@ -67,8 +69,8 @@ const chatFlow = ai.defineFlow(
   },
   async input => {
     const history = input.history.map(msg => ({
-        role: msg.role,
-        content: [{ text: msg.content }],
+      role: msg.role,
+      content: [{text: msg.content}],
     }));
 
     // Generate the text response
@@ -78,10 +80,11 @@ const chatFlow = ai.defineFlow(
       config: {
         maxOutputTokens: 100,
       },
-      system: 'You are a friendly AI assistant named Wally. Keep your responses concise and helpful.',
+      system:
+        'You are a friendly AI assistant named Wally. Keep your responses concise and helpful.',
     });
     const responseText = llmResponse.text;
-    
+
     if (!responseText) {
       return {
         message: "I'm sorry, I couldn't generate a response.",
@@ -104,7 +107,12 @@ const chatFlow = ai.defineFlow(
     });
 
     if (!media) {
-      throw new Error('No audio media returned from TTS model.');
+      // This can happen if the responseText is empty or contains unsupported characters.
+      // We return the text message but no audio.
+      return {
+        message: responseText,
+        audio: '',
+      };
     }
 
     const audioBuffer = Buffer.from(
