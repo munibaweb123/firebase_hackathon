@@ -99,9 +99,9 @@ export default function Home() {
               </div>
             </div>
             {heroImage && (
-              <div className="relative aspect-[4/3] w-full max-w-lg mx-auto lg:max-w-none">
+              <div className="relative aspect-video w-full max-w-lg mx-auto lg:max-w-none">
                 <div className="absolute -inset-4 bg-gradient-to-r from-[#9F6FFF] to-[#E83E8C] rounded-2xl blur-lg opacity-20"></div>
-                <Image
+                 <Image
                   src={heroImage.imageUrl}
                   alt={heroImage.description}
                   fill
@@ -168,7 +168,7 @@ export default function Home() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-20 lg:py-24 bg-gradient-to-br from-[#1C0E2B] to-[#241539]">
+        <section id="faq" className="py-20 lg-py-24 bg-gradient-to-br from-[#1C0E2B] to-[#241539]">
           <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -238,3 +238,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
