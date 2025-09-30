@@ -1,3 +1,4 @@
+
 import {
   collection,
   doc,
@@ -71,7 +72,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
 
     return transactions;
   } catch (error: any) {
-    // Gracefully handle missing Firestore index
+    // Gracefully handle missing Firestore index or other query errors
     if (error.code === 'failed-precondition' && error.message.includes('index')) {
         console.warn(
         `A Firestore index is required for this query. 
@@ -80,10 +81,10 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
         Falling back to an empty list for now.`,
         error
         );
-        return [];
+    } else {
+      console.error('Error getting transactions:', error);
     }
-    
-    console.error('Error getting transactions:', error);
-    throw new Error('Failed to get transactions.');
+    // Return empty array to prevent app from crashing
+    return [];
   }
 }
