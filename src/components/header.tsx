@@ -23,7 +23,6 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
-  SheetClose,
 } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -50,6 +49,10 @@ export function Header() {
   const getInitials = (email: string | null) => {
     if (!email) return 'U';
     return email.charAt(0).toUpperCase();
+  };
+  
+  const handleLinkClick = () => {
+    setIsSheetOpen(false);
   };
 
   return (
@@ -145,14 +148,14 @@ export function Header() {
           <SheetContent side="right">
             <nav className="grid gap-6 text-lg font-medium mt-8">
               {navLinks.map(link => (
-                <SheetClose asChild key={link.href}>
                   <Link
+                    key={link.href}
                     href={link.href}
                     className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                    onClick={handleLinkClick}
                   >
                     {link.label}
                   </Link>
-                </SheetClose>
               ))}
             </nav>
           </SheetContent>
