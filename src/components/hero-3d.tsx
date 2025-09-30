@@ -1,53 +1,35 @@
 'use client';
-import React, { useRef, useState, Suspense } from 'react';
+import React, { useRef, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
-import type { Group } from 'three';
+import { OrbitControls } from '@react-three/drei';
+import type { Mesh } from 'three';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
-
-function RobotModel({ hovered }: { hovered: boolean }) {
-  // IMPORTANT: You need to replace this path with the actual path to your 3D model.
-  // Place your model in the `public` folder.
-  const { scene } = useGLTF('/hero2.glb'); 
-  const groupRef = useRef<Group>(null!);
+function SpinningCube() {
+  const meshRef = useRef<Mesh>(null!);
 
   useFrame((state, delta) => {
-    const t = state.clock.getElapsedTime();
-    const targetY = hovered ? Math.sin(t * 2) * 0.1 + 0.1 : 0;
-    
-    // Smoothly interpolate the position
-    if(groupRef.current) {
-      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, 0.1);
+    if (meshRef.current) {
+      meshRef.current.rotation.x += delta * 0.2;
+      meshRef.current.rotation.y += delta * 0.2;
     }
   });
 
-
   return (
-    <primitive
-      ref={groupRef}
-      object={scene}
-      scale={1.2} // Adjust scale as needed
-      position={[0, -2.5, 0]} // Adjust position as needed
-    />
+    <mesh ref={meshRef} scale={1.5}>
+      <boxGeometry />
+      <meshStandardMaterial color={'hsl(var(--primary))'} />
+    </mesh>
   );
 }
 
-// Preload the model to prevent flash of empty canvas
-useGLTF.preload('/hero2.glb');
-
 
 export function Hero3D() {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <div
       className="w-full h-full relative"
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
     >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-pink-500/5 dark:from-primary/10 dark:via-[#10032A] dark:to-pink-500/10" />
         <div className="absolute top-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
@@ -57,9 +39,9 @@ export function Hero3D() {
         <ambientLight intensity={1.5} />
         <pointLight position={[10, 10, 10]} intensity={1} />
         <Suspense fallback={null}>
-          <RobotModel hovered={hovered} />
+          <SpinningCube />
         </Suspense>
-        {/* <OrbitControls /> uncomment for development to control the camera */}
+        <OrbitControls enableZoom={false} autoRotate />
       </Canvas>
       
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

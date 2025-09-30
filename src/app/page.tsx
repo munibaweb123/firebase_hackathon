@@ -16,6 +16,7 @@ import { ArrowRight, Mic, Shield, Smartphone, BarChart } from 'lucide-react';
 
 const Hero3D = dynamic(() => import('@/components/hero-3d').then(mod => mod.Hero3D), {
   ssr: false,
+  loading: () => <div className="w-full h-[80vh] lg:h-screen bg-background" />,
 });
 
 
