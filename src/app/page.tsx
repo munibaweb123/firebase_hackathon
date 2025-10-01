@@ -76,10 +76,12 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full h-[80vh] lg:h-screen flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-pink-500/5 dark:from-primary/10 dark:via-[#10032A] dark:to-pink-500/10" />
-          <div className="absolute top-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl"></div>
+        <section className="relative w-full h-[90vh] lg:h-screen flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+             <SplineHero />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/10 to-pink-500/5 dark:from-primary/10 dark:via-[#10032A]/50 dark:to-pink-500/10" />
+          
           <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center px-4 md:px-6 relative z-10">
             <div className="space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary dark:text-primary-foreground text-sm mb-4">
@@ -107,9 +109,8 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="absolute inset-y-0 right-0 w-1/2 h-full lg:relative lg:w-full lg:h-[600px]">
-              <SplineHero />
-            </div>
+             {/* This empty div is a placeholder for the second column in the grid on large screens */}
+            <div className="hidden lg:block"></div>
           </div>
         </section>
 
