@@ -1,9 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { Header } from '@/components/header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Loader2, Sparkles } from 'lucide-react';
+import { hello } from '@/ai/flows/hello-flow';
 
 const teamMembers = [
   { name: 'Muniba Ahmed', role: 'Team Lead' },
@@ -14,6 +18,24 @@ const teamMembers = [
 ];
 
 export default function AboutPage() {
+  const [greeting, setGreeting] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleTestGreeting = async () => {
+    setLoading(true);
+    setGreeting('');
+    try {
+      const response = await hello({ name: 'Studio User' });
+      setGreeting(response.greeting);
+    } catch (error) {
+      console.error('Error fetching greeting:', error);
+      setGreeting('Failed to get a greeting.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <>
       <Header />
@@ -37,6 +59,25 @@ export default function AboutPage() {
             </p>
             
             <Separator className="my-6" />
+
+             {/* Genkit Test Section */}
+            <div className="text-center p-4 border rounded-lg">
+              <h2 className="text-xl font-bold mb-2">Test Your Genkit Flow</h2>
+              <p className="text-muted-foreground mb-4">Click the button below to call the `hello` flow.</p>
+              <Button onClick={handleTestGreeting} disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                Test AI Greeting
+              </Button>
+              {greeting && (
+                <div className="mt-4 p-4 bg-muted rounded-md text-left">
+                  <p className="font-semibold">AI Response:</p>
+                  <p className="text-sm">{greeting}</p>
+                </div>
+              )}
+            </div>
+
+            <Separator className="my-6" />
+
 
             <div className="text-center">
               <h2 className="text-2xl font-bold">Meet the Team</h2>
