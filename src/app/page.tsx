@@ -11,13 +11,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import dynamic from 'next/dynamic';
-import { ArrowRight, Mic, Shield, Smartphone, BarChart } from 'lucide-react';
-
-const Hero3D = dynamic(() => import('@/components/hero-3d').then(mod => mod.Hero3D), {
-  ssr: false,
-  loading: () => <div className="w-full h-[80vh] lg:h-screen bg-background" />,
-});
+import { ArrowRight, Mic, Shield, Smartphone, BarChart, Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 
 const faqItems = [
@@ -76,8 +71,48 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full h-[80vh] lg:h-screen overflow-hidden">
-           <Hero3D />
+        <section className="relative w-full h-[80vh] lg:h-screen flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-pink-500/5 dark:from-primary/10 dark:via-[#10032A] dark:to-pink-500/10" />
+          <div className="absolute top-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl"></div>
+          <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center px-4 md:px-6 relative z-10">
+            <div className="space-y-6 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary dark:text-primary-foreground text-sm mb-4">
+                <Sparkles className="w-4 h-4" />
+                Intelligent Finance, Humanized
+              </div>
+              
+              <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
+                Your AI {' '}
+                <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                  Financial Partner
+                </span>
+              </h1>
+              
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                The smart, voice-powered way to track expenses, manage budgets, and achieve your financial goals.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                <Button asChild size="lg" className="h-12 px-8 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
+                  <Link href="/signup" className="flex items-center gap-2">
+                    Get Started Free
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+            <div className="relative flex items-center justify-center">
+              <Image
+                src="/hero.png"
+                alt="AI assistant interacting with financial data"
+                width={800}
+                height={600}
+                className="rounded-lg"
+                data-ai-hint="financial workspace"
+              />
+            </div>
+          </div>
         </section>
 
         {/* Features Section */}
