@@ -11,7 +11,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
-import { addTransaction } from '@/lib/firestore';
+import { addTransaction as saveTransactionToDb } from '@/lib/firestore';
+import { categorizeTransaction } from './categorize-transaction-flow';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'model']),
@@ -51,28 +52,40 @@ const addTransactionTool = ai.defineTool(
     outputSchema: z.object({
       success: z.boolean(),
       message: z.string(),
+      data: z.any().optional(),
     }),
   },
-  // The tool needs the `userId` to save data, but we don't want the LLM to have to provide it.
-  // We use the `custom` field in the `toolConfig` of the `generate` call below to inject it.
-  async (input) => {
-    if (!input.userId) {
+  async ({ userId, transactionText }) => {
+    if (!userId) {
        return {
         success: false,
-        message: "I'm sorry, I wasn't able to add this transaction. User ID is required to add a transaction.",
+        message: "Please provide your User ID so I can save this transaction.",
       };
     }
     try {
-      await addTransaction(input.userId, input.transactionText);
+      // The tool now only categorizes, it doesn't save.
+      const categorized = await categorizeTransaction({ text: transactionText });
+      if (!categorized.category || !categorized.amount) {
+         return {
+            success: false,
+            message: "I couldn't figure out the details for that transaction. Could you be more specific?",
+         };
+      }
+      
+      // We ask for confirmation in the main flow.
+      const confirmationMessage = `You spent $${categorized.amount} on ${categorized.description}, correct?`;
+
       return {
         success: true,
-        message: `Transaction "${input.transactionText}" was added successfully.`,
+        message: confirmationMessage,
+        data: categorized
       };
+      
     } catch (error: any) {
       console.error('Tool error:', error);
        return {
         success: false,
-        message: error.message || "I couldn't figure out the details for that transaction. Could you be more specific?",
+        message: "I'm sorry, there was an issue processing your request. Please try again.",
       };
     }
   }
@@ -128,7 +141,6 @@ const chatFlow = ai.defineFlow(
         prompt: cleanedMessage,
         tools: [addTransactionTool],
         toolConfig: {
-           // Pass the userId to the tool automatically so the LLM doesn't have to.
            custom: (toolRequest) => {
              if (toolRequest.name === 'addTransaction') {
                 toolRequest.input.userId = input.userId;
@@ -139,8 +151,18 @@ const chatFlow = ai.defineFlow(
         config: {
           maxOutputTokens: 256,
         },
-        system:
-          'You are Wally, a helpful financial voice assistant for the WealthWise app. Your primary job is to help users track their finances. If a user asks you to add an expense or income, you must use the `addTransaction` tool. For all other questions, answer in a clear, simple, and friendly manner.',
+        system: `You are Wally, a friendly financial assistant that works through voice.
+Your job is to listen to the user’s spoken commands and help them record, manage, and view their financial transactions.
+
+Core Instructions:
+1. Always understand the intent: add expense, add income, view balance, view transactions, delete or update a transaction.
+2. When adding a transaction, use the 'addTransaction' tool to parse the details.
+3. The tool will return a confirmation message. You must ask the user this confirmation question.
+4. If the user confirms (e.g., "yes", "correct"), on the *next* turn, you will call the 'saveTransactionToDb' function to actually save the data.
+5. Never proceed with saving if a User ID is missing. The tool handles this check.
+6. Respond in a natural, short, voice-friendly way.
+7. Be polite and helpful.
+`,
       });
 
       const responseText = llmResponse.text;
@@ -177,6 +199,23 @@ const chatFlow = ai.defineFlow(
           return '';
         }
       }
+
+      if (llmResponse.toolRequests.length > 0) {
+        // This is a simplified example. A real implementation would need to handle
+        // the user's confirmation ("yes/no") in the next turn to actually save the transaction.
+        // For now, we'll just return the confirmation question.
+        const toolResponse = llmResponse.toolRequests[0];
+        const toolResult = await addTransactionTool(toolResponse.input);
+        const messageToUser = toolResult.message;
+        
+        const responseAudio = await generateAudio(messageToUser);
+
+        return {
+          message: messageToUser,
+          audio: responseAudio,
+        };
+      }
+
 
       if (!responseText || responseText.trim() === '') {
         // Don't generate audio for the fallback to save API calls

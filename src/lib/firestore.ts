@@ -42,13 +42,13 @@ export const getInsightsCollection = (userId: string) =>
 
 /**
  * A streamlined function to add a transaction from a tool call.
- * It categorizes the text and saves it directly.
+ * It now expects already categorized data.
  * @param userId - The ID of the user.
- * @param transactionText - The natural language description of the transaction.
+ * @param transactionData - The categorized transaction data from the AI.
  */
 export async function addTransaction(
   userId: string,
-  transactionText: string
+  transactionData: { description: string, amount: number, category: string }
 ): Promise<{ success: boolean; message: string; }> {
   if (!userId) {
      return {
@@ -57,30 +57,21 @@ export async function addTransaction(
       };
   }
   try {
-    // 1. Categorize transaction
-    const categorized = await categorizeTransaction({ text: transactionText });
-    if (!categorized.category || !categorized.amount) {
-         return {
-            success: false,
-            message: "I couldn't figure out the details for that transaction. Could you be more specific?",
-         };
-    }
+    // 1. Determine type
+    const type = incomeCategories.includes(transactionData.category) ? 'income' : 'expense';
 
-    // 2. Determine type
-    const type = incomeCategories.includes(categorized.category) ? 'income' : 'expense';
-
-    // 3. Save to Firestore
+    // 2. Save to Firestore
     const transactionsCol = getTransactionsCollection(userId);
     await addDoc(transactionsCol, {
-      description: categorized.description,
-      amount: categorized.amount,
-      category: categorized.category,
+      description: transactionData.description,
+      amount: transactionData.amount,
+      category: transactionData.category,
       type: type,
       date: Timestamp.now(),
     });
      return {
         success: true,
-        message: `Transaction "${categorized.description}" was added successfully.`,
+        message: `Transaction "${transactionData.description}" was added successfully.`,
       };
   } catch (error) {
     console.error('Error adding transaction via tool:', error);
