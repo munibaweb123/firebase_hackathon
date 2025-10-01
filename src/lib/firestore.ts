@@ -13,7 +13,7 @@ import {
 import { db } from './firebase';
 import type { Budget, Transaction, TransactionData } from './types';
 import { processTransaction } from '@/ai/flows/transaction-manager-flow';
-import { mockBudgets } from './data';
+import { mockBudgets, incomeCategories } from './data';
 
 // Collection References
 export const getUsersCollection = () => collection(db, 'users');
@@ -65,14 +65,15 @@ export async function processAndSaveTransaction(
     });
 
     const { transaction, category, recurring, insights, alerts } = agentResult;
-
+    const type = incomeCategories.includes(category) ? 'income' : 'expense';
+    
     // 2. Save categorized transaction
     const transactionsCol = getTransactionsCollection(userId);
     const transactionDoc = {
       description: transaction.description,
       amount: transaction.amount,
       category: category,
-      type: category === 'Salary' || category === 'Freelance' || category === 'Investment' ? 'income' : 'expense',
+      type: type,
       date: Timestamp.now(),
     };
     await addDoc(transactionsCol, transactionDoc);
@@ -133,8 +134,10 @@ export async function addTransaction(
 ): Promise<void> {
   try {
     const transactionsCol = getTransactionsCollection(userId);
+    const type = incomeCategories.includes(transactionData.category) ? 'income' : 'expense';
     await addDoc(transactionsCol, {
       ...transactionData,
+      type: type,
       date: Timestamp.fromDate(transactionData.date),
     });
   } catch (error) {

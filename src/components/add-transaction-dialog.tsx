@@ -128,7 +128,8 @@ export function AddTransactionDialog({
 
 
   function onManualSubmit(values: z.infer<typeof formSchema>) {
-    onTransactionAdd(values);
+    const type = incomeCategories.includes(values.category) ? 'income' : 'expense';
+    onTransactionAdd({...values, type});
     form.reset();
     setNaturalLanguageInput('');
     onOpenChange(false);
