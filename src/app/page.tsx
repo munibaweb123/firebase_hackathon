@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { VoiceAgent } from '@/components/voice-agent';
@@ -106,7 +107,7 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="relative flex items-center justify-center h-[400px] lg:h-[600px]">
+            <div className="absolute inset-y-0 right-0 w-1/2 h-full lg:relative lg:w-full lg:h-[600px]">
               <SplineHero />
             </div>
           </div>
