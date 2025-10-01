@@ -12,7 +12,6 @@ import {
 import { ArrowRight, Mic, Shield, Smartphone, BarChart, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { VoiceAgent } from '@/components/voice-agent';
 
 
 const SplineHero = dynamic(() => import('@/components/spline-hero'), {
@@ -154,8 +153,8 @@ export default function Home() {
         {/* Voice Agent Section */}
         <section id="voice-agent" className="py-20 lg:py-28 bg-gradient-to-b from-card/30 to-background dark:from-card/30 dark:to-background">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="w-full max-w-6xl mx-auto">
-              <div className="text-center mb-16">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+               <div className="text-center lg:text-left">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r from-primary to-violet-600 mb-6 shadow-lg">
                   <Mic className="w-10 h-10 text-white" />
                 </div>
@@ -164,13 +163,19 @@ export default function Home() {
                   Meet Wally, Your Voice Assistant
                 </h2>
                 
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  Managing your money is now as easy as talking. Just tell Wally about your transactions and watch the magic happen.
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                  Managing your money is now as easy as talking. Just tell Wally about your transactions and watch the magic happen. Go to your dashboard to try it out!
                 </p>
               </div>
-              
-              <div className="bg-card/50 dark:bg-card/50 backdrop-blur-sm rounded-3xl p-8 lg:p-12 border border-border shadow-2xl shadow-primary/5">
-                <VoiceAgent />
+              <div>
+                 <Image 
+                    src="https://storage.googleapis.com/project-upload-prod/images/45071cb9-25f0-432d-944a-d830b0802c61.png" 
+                    alt="Voice agent illustration"
+                    width={600}
+                    height={400}
+                    className="rounded-2xl"
+                    data-ai-hint="voice technology"
+                  />
               </div>
             </div>
           </div>

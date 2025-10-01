@@ -47,7 +47,7 @@ export const getInsightsCollection = (userId: string) =>
 export async function processAndSaveTransaction(
   userId: string,
   input: string | TransactionData
-): Promise<void> {
+): Promise<string> {
   if (!userId) {
     throw new Error('User ID is required to process a transaction.');
   }
@@ -110,17 +110,13 @@ export async function processAndSaveTransaction(
         }
     }
     
-    // This part would handle FCM/Email, but is out of scope for now.
-    // if (alerts && alerts.length > 0) {
-    //   console.log("Forwarding alerts to notification service...");
-    // }
+    return `Transaction: ${transaction.description} for $${transaction.amount} has been added under ${category}.`;
 
   } catch (error) {
     console.error('Error in Firebase Integration Agent workflow:', error);
     throw new Error('Failed to process and save transaction.');
   }
 }
-
 
 
 /**

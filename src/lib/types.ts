@@ -9,7 +9,7 @@ export type Transaction = {
   type: 'income' | 'expense';
 };
 
-export type TransactionData = Omit<Transaction, 'id'>;
+export type TransactionData = Omit<Transaction, 'id' | 'date'> & { date: Date | Timestamp };
 
 
 export type Budget = {

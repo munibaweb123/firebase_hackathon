@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { processAndSaveTransaction, onTransactionsUpdate } from '@/lib/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { VoiceAgent } from './voice-agent';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -39,10 +40,10 @@ export default function Dashboard() {
       try {
         // processAndSaveTransaction will trigger the AI agent workflow and save to Firestore.
         // The real-time listener (onTransactionsUpdate) will then automatically update the UI.
-        await processAndSaveTransaction(user.uid, transactionInput);
+        const resultMessage = await processAndSaveTransaction(user.uid, transactionInput);
          toast({
           title: 'Success!',
-          description: 'Your transaction has been processed and added.',
+          description: resultMessage,
         });
       } catch (error) {
         console.error('Failed to process and add transaction:', error);
@@ -72,10 +73,21 @@ export default function Dashboard() {
           {loading ? (
             <Skeleton className="h-96" />
           ) : (
-            <TransactionsTable
-              transactions={transactions}
-              onAddTransaction={() => setAddTransactionOpen(true)}
-            />
+             <div className="grid gap-4 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <TransactionsTable
+                  transactions={transactions}
+                  onAddTransaction={() => setAddTransactionOpen(true)}
+                />
+              </div>
+              <div>
+                <VoiceAgent
+                  userId={user?.uid}
+                  pastTransactions={transactions}
+                  budgets={mockBudgets}
+                />
+              </div>
+            </div>
           )}
           <SpendingAnalysis transactions={transactions} budgets={mockBudgets} />
         </div>

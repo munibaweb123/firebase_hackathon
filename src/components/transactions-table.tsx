@@ -99,7 +99,7 @@ export function TransactionsTable({
         </div>
         <Button onClick={onAddTransaction}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Transaction
+          Add Manually
         </Button>
       </CardHeader>
       <CardContent>
@@ -116,7 +116,7 @@ export function TransactionsTable({
           <TableBody>
             {sortedTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
-                <TableCell>{format(transaction.date, 'MMM d, yyyy')}</TableCell>
+                <TableCell>{format(new Date(transaction.date), 'MMM d, yyyy')}</TableCell>
                 <TableCell className="font-medium">
                   {transaction.description}
                 </TableCell>

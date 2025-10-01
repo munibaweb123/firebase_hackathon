@@ -1,6 +1,7 @@
 'use server';
 /**
  * @fileOverview A simple chat flow that generates a text response and converts it to speech.
+ * It can also use tools, like adding a transaction.
  *
  * - chat - A function that handles the chat interaction.
  * - ChatInput - The input type for the chat function.
@@ -10,6 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
+import { processAndSaveTransaction } from '@/lib/firestore';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'model']),
@@ -17,8 +19,11 @@ const MessageSchema = z.object({
 });
 
 const ChatInputSchema = z.object({
+  userId: z.string(),
   history: z.array(MessageSchema),
   message: z.string().describe("The user's message to the AI."),
+  pastTransactions: z.array(z.any()), // Keeping it simple for now
+  budgets: z.array(z.any()),
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
@@ -33,6 +38,24 @@ export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 export async function chat(input: ChatInput): Promise<ChatOutput> {
   return chatFlow(input);
 }
+
+
+const addTransactionTool = ai.defineTool(
+  {
+    name: 'addTransaction',
+    description: 'Use this to add a new income or expense transaction. The input should be a natural language description of the transaction (e.g., "I just spent $10 on coffee" or "received 2000 for my salary").',
+    inputSchema: z.object({
+      transactionText: z.string().describe('The natural language description of the transaction.'),
+    }),
+    outputSchema: z.string(),
+  },
+  // The tool needs the `userId` to save data, but we don't want the LLM to have to provide it.
+  // We use the `custom` field in the `toolConfig` of the `generate` call below to inject it.
+  async ({ userId, transactionText }: { userId: string, transactionText: string }) => {
+    return processAndSaveTransaction(userId, transactionText);
+  }
+);
+
 
 async function toWav(
   pcmData: Buffer,
@@ -81,14 +104,26 @@ const chatFlow = ai.defineFlow(
       const llmResponse = await ai.generate({
         history,
         prompt: cleanedMessage,
+        tools: [addTransactionTool],
+        toolConfig: {
+           // Pass the userId to the tool automatically so the LLM doesn't have to.
+           custom: (toolRequest) => {
+             if (toolRequest.name === 'addTransaction') {
+                return {
+                    userId: input.userId,
+                    transactionText: toolRequest.input.transactionText,
+                }
+             }
+           }
+        },
         config: {
           maxOutputTokens: 256,
         },
         system:
-          'You are Wally, a helpful financial voice assistant. Always answer in clear, simple English.',
+          'You are Wally, a helpful financial voice assistant for the WealthWise app. Your main job is to help users track their finances. If a user asks you to add an expense or income, you must use the `addTransaction` tool. For all other questions, answer in a clear, simple, and friendly manner.',
       });
-      const responseText = llmResponse.text;
 
+      const responseText = llmResponse.text;
       const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
 
       async function generateAudio(text: string): Promise<string> {

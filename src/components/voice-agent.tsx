@@ -2,22 +2,27 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useAuth } from '@/contexts/auth-context';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { transcribeAudio } from '@/ai/flows/speech-to-text-flow';
 import { chat } from '@/ai/flows/chat-flow';
+import type { Transaction, Budget } from '@/lib/types';
 
 interface Message {
   role: 'user' | 'model';
   content: string;
 }
 
-export function VoiceAgent() {
+interface VoiceAgentProps {
+  userId: string | undefined;
+  pastTransactions: Transaction[];
+  budgets: Budget[];
+}
+
+export function VoiceAgent({ userId, pastTransactions, budgets }: VoiceAgentProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState<Message[]>([]);
-  const { user } = useAuth();
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -29,7 +34,7 @@ export function VoiceAgent() {
   }, [transcript]);
 
   const handleStartRecording = async () => {
-    if (!user) {
+    if (!userId) {
       alert('Please log in to use the voice agent.');
       return;
     }
@@ -59,10 +64,13 @@ export function VoiceAgent() {
             if(transcribedText && transcribedText.trim() !== '') {
                setTranscript((prev) => [...prev, { role: 'user', content: transcribedText }]);
               
-              // 2. Get Chat Response
+              // 2. Get Chat Response (which may use tools)
               const chatResponse = await chat({
+                userId: userId,
                 message: transcribedText,
                 history: transcript.slice(-10), // Pass last 10 messages as history
+                pastTransactions: pastTransactions.map(t => ({...t, date: t.date.toISOString()})),
+                budgets: budgets
               });
 
               if (chatResponse.message) {
@@ -111,17 +119,17 @@ export function VoiceAgent() {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full h-full">
       <CardHeader>
         <CardTitle>Talk to Wally</CardTitle>
         <CardDescription>
-          Click the button to start recording your transaction. Click again to stop.
+          Click to record. Click again to stop.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 flex flex-col items-center">
         <Button
           onClick={toggleRecording}
-          disabled={isProcessing}
+          disabled={isProcessing || !userId}
           className={`w-24 h-24 rounded-full flex items-center justify-center transition-colors ${
             isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
           }`}
@@ -136,6 +144,11 @@ export function VoiceAgent() {
         </Button>
         
         <div className="w-full space-y-4 p-4 border rounded-lg h-64 overflow-y-auto bg-muted/50">
+           {transcript.length === 0 && (
+             <div className="flex items-center justify-center h-full text-muted-foreground">
+               Ask me to add a transaction!
+            </div>
+           )}
            {transcript.map((item, index) => (
             <div key={index} className="flex items-start gap-3">
               <Badge variant={item.role === 'user' ? 'secondary' : 'outline'} className="mt-1 capitalize">
