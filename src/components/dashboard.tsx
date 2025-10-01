@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,7 +10,7 @@ import { AddTransactionDialog } from '@/components/add-transaction-dialog';
 import { mockBudgets } from '@/lib/data';
 import type { Transaction, TransactionData } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
-import { getTransactions, addTransaction } from '@/lib/firestore';
+import { addTransaction, onTransactionsUpdate } from '@/lib/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
@@ -19,29 +20,24 @@ export default function Dashboard() {
   const [isAddTransactionOpen, setAddTransactionOpen] = useState(false);
 
   useEffect(() => {
-    async function fetchTransactions() {
-      if (user) {
-        setLoading(true);
-        try {
-          const userTransactions = await getTransactions(user.uid);
-          setTransactions(userTransactions);
-        } catch (error) {
-          console.error('Failed to fetch transactions:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
+    if (user) {
+      setLoading(true);
+      const unsubscribe = onTransactionsUpdate(user.uid, (userTransactions) => {
+        setTransactions(userTransactions);
+        setLoading(false);
+      });
+
+      // Cleanup subscription on component unmount
+      return () => unsubscribe();
     }
-    fetchTransactions();
   }, [user]);
 
   const handleAddTransaction = async (newTransactionData: TransactionData) => {
     if (user) {
       try {
+        // The real-time listener will automatically update the UI,
+        // so we don't need to manually refetch or set state here.
         await addTransaction(user.uid, newTransactionData);
-        // Refetch transactions to show the new one
-        const userTransactions = await getTransactions(user.uid);
-        setTransactions(userTransactions);
       } catch (error) {
         console.error('Failed to add transaction:', error);
       }
