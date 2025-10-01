@@ -169,7 +169,7 @@ export default function Home() {
               </div>
               <div>
                  <Image 
-                    src="https://storage.googleapis.com/project-upload-prod/images/e979a353-8f06-4b21-82b5-2244490e6b54.png" 
+                    src="https://storage.googleapis.com/project-upload-prod/images/45071cb9-25f0-432d-944a-d830b0802c61.png" 
                     alt="Voice agent illustration"
                     width={600}
                     height={400}
