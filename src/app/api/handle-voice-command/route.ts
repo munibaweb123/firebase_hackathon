@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     }
 
     // Determine if it's income or expense based on the categorized result.
-    const transactionType = incomeCategories.includes(category as any) ? 'income' : 'expense';
+    const transactionType = incomeCategories.includes(category as (typeof incomeCategories)[number]) ? 'income' : 'expense';
 
     // Save the structured transaction to Firestore.
     await addTransaction(userId, {

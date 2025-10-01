@@ -110,7 +110,7 @@ export function AddTransactionDialog({
     try {
       const result = await categorizeTransaction({ text: naturalLanguageInput });
       if (result) {
-        const isIncome = incomeCategories.includes(result.category as any);
+        const isIncome = incomeCategories.includes(result.category as (typeof incomeCategories)[number]);
         const newType = isIncome ? 'income' : 'expense';
         
         form.setValue('description', result.description);
