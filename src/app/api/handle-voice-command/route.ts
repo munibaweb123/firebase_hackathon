@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { addTransaction } from '@/lib/firestore';
 import * as admin from 'firebase-admin';
+import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
+import { allCategories, incomeCategories } from '@/lib/data';
 
 // Initialize Firebase Admin SDK
 // This is necessary for verifying the user's auth token on the server-side.
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!);
-
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!)),
   });
 }
 
@@ -30,7 +30,6 @@ export async function POST(request: Request) {
 
   const userId = decodedToken.uid;
   const body = await request.json();
-
   const { functionCall } = body;
 
   if (!functionCall || functionCall.name !== 'addExpense') {
@@ -38,18 +37,32 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { amount, category, description } = functionCall.parameters;
-
-    if (typeof amount !== 'number' || typeof category !== 'string' || typeof description !== 'string') {
-        return NextResponse.json({ error: 'Invalid parameters for addExpense' }, { status: 400 });
+    // The 'description' from Vapi's function call contains the raw user utterance.
+    const rawText = functionCall.parameters.description;
+    
+    if (!rawText || typeof rawText !== 'string') {
+       return NextResponse.json({ error: 'Invalid parameters: description text is missing.' }, { status: 400 });
     }
 
+    // Use our AI flow to parse and categorize the raw text.
+    const categorizedResult = await categorizeTransaction({ text: rawText });
+
+    const { description, amount, category } = categorizedResult;
+    
+    if (typeof amount !== 'number' || typeof category !== 'string' || typeof description !== 'string') {
+        return NextResponse.json({ error: 'AI categorization failed to return valid parameters.' }, { status: 400 });
+    }
+
+    // Determine if it's income or expense based on the categorized result.
+    const transactionType = incomeCategories.includes(category as any) ? 'income' : 'expense';
+
+    // Save the structured transaction to Firestore.
     await addTransaction(userId, {
       amount,
       category,
       description,
       date: new Date(),
-      type: 'expense',
+      type: transactionType,
     });
 
     return NextResponse.json({ success: true, message: 'Transaction added successfully.' });
