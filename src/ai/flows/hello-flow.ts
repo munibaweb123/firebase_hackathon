@@ -37,7 +37,6 @@ const helloFlow = ai.defineFlow(
     });
 
     const text = llmResponse.text;
-    console.log(text);
 
     return {
       greeting: text,
