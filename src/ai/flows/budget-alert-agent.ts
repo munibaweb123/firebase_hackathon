@@ -18,8 +18,13 @@ const BudgetAlertInputSchema = z.object({
 });
 export type BudgetAlertInput = z.infer<typeof BudgetAlertInputSchema>;
 
+const AlertSchema = z.object({
+  type: z.enum(['Budget', 'Recurring']),
+  message: z.string(),
+});
+
 const BudgetAlertOutputSchema = z.object({
-  alerts: z.array(z.string()).describe('A list of budget-related alerts.'),
+  alerts: z.array(AlertSchema).describe('A list of budget-related alerts.'),
 });
 export type BudgetAlertOutput = z.infer<typeof BudgetAlertOutputSchema>;
 
@@ -36,13 +41,19 @@ const budgetAlertAgentFlow = ai.defineFlow(
     outputSchema: BudgetAlertOutputSchema,
   },
   async ({ category, totalSpent, budgetLimit }) => {
-    const alerts: string[] = [];
+    const alerts: z.infer<typeof AlertSchema>[] = [];
     const spendingRatio = totalSpent / budgetLimit;
 
     if (spendingRatio >= 1) {
-      alerts.push(`You have exceeded your budget for ${category}.`);
+      alerts.push({
+        type: 'Budget',
+        message: `🚨 You have exceeded your budget for ${category} by ${Math.round((spendingRatio - 1) * 100)}%.`,
+      });
     } else if (spendingRatio >= 0.8) {
-      alerts.push(`You are approaching your budget limit for ${category}.`);
+      alerts.push({
+        type: 'Budget',
+        message: `⚠️ You have spent ${Math.round(spendingRatio * 100)}% of your ${category} budget. Consider reducing spending in this area.`,
+      });
     }
 
     return { alerts };

@@ -111,7 +111,7 @@ const transactionManagerFlow = ai.defineFlow(
             totalSpent: totalSpent,
             budgetLimit: budgetForCategory.limit,
         });
-        alerts = alertResult.alerts;
+        alerts = alertResult.alerts.map(a => a.message);
     }
     
     // 5. Final structured response
