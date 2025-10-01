@@ -10,10 +10,10 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { allCategories } from '@/lib/data';
+import { allCategories, expenseCategories } from '@/lib/data';
 
 const CategorizeTransactionInputSchema = z.object({
-  text: z.string().describe('The natural language text describing a transaction.'),
+  text: z.string().describe('The natural language text describing a transaction, including amount, merchant, and description.'),
 });
 export type CategorizeTransactionInput = z.infer<typeof CategorizeTransactionInputSchema>;
 
@@ -34,10 +34,13 @@ const categorizeTransactionPrompt = ai.definePrompt({
   name: 'categorizeTransactionPrompt',
   input: { schema: CategorizeTransactionInputSchema },
   output: { schema: CategorizeTransactionOutputSchema },
-  prompt: `You are an expert at parsing and categorizing financial transactions.
+  prompt: `You are the Auto Categorization Agent for the WealthWise app. Your job is to classify each financial transaction into a spending category.
   Analyze the following text and extract the transaction details.
   The currency is assumed to be USD unless specified otherwise.
-  The category must be one of the following: ${allCategories.join(', ')}.
+  Assign one category from this list for expenses: ${expenseCategories.join(', ')}.
+  For income, you can use categories like Salary, Freelance, etc.
+  If unsure, choose "Other".
+  Be consistent across similar merchants (e.g., Starbucks -> Food & Dining, Uber -> Transport).
 
   Text: {{{text}}}
   `,
