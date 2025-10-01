@@ -80,7 +80,7 @@ export default function Home() {
           <div className="absolute inset-0 z-0">
              <SplineHero />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/10 to-pink-500/5 dark:from-primary/10 dark:via-[#10032A]/50 dark:to-pink-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/10 to-pink-500/5 dark:from-primary/10 dark:via-[#10032A]/50 dark:to-pink-500/10 pointer-events-none" />
           
           <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center px-4 md:px-6 relative z-10">
             <div className="space-y-6 text-center lg:text-left">
