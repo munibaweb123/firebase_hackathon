@@ -45,6 +45,7 @@ const addTransactionTool = ai.defineTool(
     name: 'addTransaction',
     description: 'Use this to add a new income or expense transaction. The input should be a natural language description of the transaction (e.g., "I just spent $10 on coffee" or "received 2000 for my salary").',
     inputSchema: z.object({
+      userId: z.string().optional(), // Make optional so LLM doesn't need to provide it.
       transactionText: z.string().describe('The natural language description of the transaction.'),
     }),
     outputSchema: z.object({
@@ -54,12 +55,18 @@ const addTransactionTool = ai.defineTool(
   },
   // The tool needs the `userId` to save data, but we don't want the LLM to have to provide it.
   // We use the `custom` field in the `toolConfig` of the `generate` call below to inject it.
-  async ({ userId, transactionText }: { userId: string, transactionText: string }) => {
+  async (input) => {
+    if (!input.userId) {
+       return {
+        success: false,
+        message: "I'm sorry, I wasn't able to add this transaction. User ID is required to add a transaction.",
+      };
+    }
     try {
-      await addTransaction(userId, transactionText);
+      await addTransaction(input.userId, input.transactionText);
       return {
         success: true,
-        message: `Transaction "${transactionText}" was added successfully.`,
+        message: `Transaction "${input.transactionText}" was added successfully.`,
       };
     } catch (error: any) {
       console.error('Tool error:', error);
@@ -124,11 +131,9 @@ const chatFlow = ai.defineFlow(
            // Pass the userId to the tool automatically so the LLM doesn't have to.
            custom: (toolRequest) => {
              if (toolRequest.name === 'addTransaction') {
-                return {
-                    userId: input.userId,
-                    transactionText: toolRequest.input.transactionText,
-                }
+                toolRequest.input.userId = input.userId;
              }
+             return toolRequest;
            }
         },
         config: {
