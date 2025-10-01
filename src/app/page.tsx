@@ -1,8 +1,5 @@
-
-
 'use client';
 
-import { VoiceAgent } from '@/components/voice-agent';
 import { Header } from '@/components/header';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -14,6 +11,13 @@ import {
 } from '@/components/ui/accordion';
 import { ArrowRight, Mic, Shield, Smartphone, BarChart, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+import { VoiceAgent } from '@/components/voice-agent';
+
+
+const SplineHero = dynamic(() => import('@/components/spline-hero'), {
+  ssr: false,
+});
 
 
 const faqItems = [
@@ -72,15 +76,9 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full h-[90vh] lg:h-screen flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 z-0">
-             <Image 
-                src="/hero.png" 
-                alt="WealthWise hero image" 
-                fill
-                style={{ objectFit: 'cover' }}
-                priority
-              />
+        <section className="relative w-full h-screen flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 z-0 h-full w-full">
+            <SplineHero />
           </div>
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/10 to-pink-500/5 dark:from-primary/10 dark:via-[#10032A]/50 dark:to-pink-500/10 pointer-events-none" />
           
