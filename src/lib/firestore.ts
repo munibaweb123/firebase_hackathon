@@ -12,8 +12,8 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Budget, Transaction, TransactionData } from './types';
-import { processTransaction } from '@/ai/flows/transaction-manager-flow';
-import { mockBudgets, incomeCategories } from './data';
+import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
+import { incomeCategories } from './data';
 
 // Collection References
 export const getUsersCollection = () => collection(db, 'users');
@@ -38,93 +38,46 @@ export const getInsightsCollection = (userId: string) =>
 
 
 /**
- * Processes a raw transaction input (either from text or structured data),
- * runs it through the AI agent workflow, and saves the results to Firestore.
- * This function embodies the "Firebase Integration Agent" persona.
+ * A streamlined function to add a transaction from a tool call.
+ * It categorizes the text and saves it directly.
  * @param userId - The ID of the user.
- * @param input - Can be a raw text string or structured transaction data.
+ * @param transactionText - The natural language description of the transaction.
  */
-export async function processAndSaveTransaction(
+export async function addTransaction(
   userId: string,
-  input: string | TransactionData
-): Promise<string> {
+  transactionText: string
+): Promise<void> {
   if (!userId) {
-    throw new Error('User ID is required to process a transaction.');
+    throw new Error('User ID is required to add a transaction.');
   }
-
   try {
-    const pastTransactions = await getTransactions(userId);
-    const budgets: Budget[] = mockBudgets; 
+    // 1. Categorize transaction
+    const categorized = await categorizeTransaction({ text: transactionText });
 
-    // 1. Get structured data from the AI Manager Agent
-    const rawInputText = typeof input === 'string' ? input : `${input.description} ${input.amount}`;
-    const agentResult = await processTransaction({
-      rawInput: rawInputText,
-      pastTransactions: pastTransactions.map(t => ({...t, date: new Date(t.date)})),
-      budgets: budgets,
-    });
+    // 2. Determine type
+    const type = incomeCategories.includes(categorized.category) ? 'income' : 'expense';
 
-    const { transaction, category, recurring, insights, alerts } = agentResult;
-    const type = incomeCategories.includes(category) ? 'income' : 'expense';
-    
-    // 2. Save categorized transaction
+    // 3. Save to Firestore
     const transactionsCol = getTransactionsCollection(userId);
-    const transactionDoc = {
-      description: transaction.description,
-      amount: transaction.amount,
-      category: category,
+    await addDoc(transactionsCol, {
+      description: categorized.description,
+      amount: categorized.amount,
+      category: categorized.category,
       type: type,
       date: Timestamp.now(),
-    };
-    await addDoc(transactionsCol, transactionDoc);
-
-    // 3. Save recurring expense data if applicable
-    if (recurring) {
-      const recurringCol = getRecurringExpensesCollection(userId);
-      await addDoc(recurringCol, {
-        ...transactionDoc,
-        recurring: true,
-      });
-    }
-
-    // 4. Save insights
-    if (insights && insights.length > 0) {
-        const insightsCol = getInsightsCollection(userId);
-        for (const insight of insights) {
-            await addDoc(insightsCol, {
-                message: insight,
-                date: Timestamp.now(),
-            });
-        }
-    }
-
-    // 5. Save alerts
-    if (alerts && alerts.length > 0) {
-        const alertsCol = getAlertsCollection(userId);
-        for (const alert of alerts) {
-            await addDoc(alertsCol, {
-                message: alert,
-                date: Timestamp.now(),
-                read: false,
-            });
-        }
-    }
-    
-    return `Transaction: ${transaction.description} for $${transaction.amount} has been added under ${category}.`;
-
+    });
   } catch (error) {
-    console.error('Error in Firebase Integration Agent workflow:', error);
-    throw new Error('Failed to process and save transaction.');
+    console.error('Error adding transaction via tool:', error);
+    throw new Error('Failed to add transaction.');
   }
 }
 
-
 /**
- * Example function to add a transaction for a specific user.
+ * Adds a transaction from a manual form submission.
  * @param userId - The ID of the user.
  * @param transactionData - The data for the new transaction.
  */
-export async function addTransaction(
+export async function addManualTransaction(
   userId: string,
   transactionData: TransactionData
 ): Promise<void> {
@@ -134,13 +87,14 @@ export async function addTransaction(
     await addDoc(transactionsCol, {
       ...transactionData,
       type: type,
-      date: Timestamp.fromDate(transactionData.date),
+      date: Timestamp.fromDate(new Date(transactionData.date)),
     });
   } catch (error) {
-    console.error('Error adding transaction:', error);
+    console.error('Error adding manual transaction:', error);
     throw new Error('Failed to add transaction.');
   }
 }
+
 
 /**
  * Sets up a real-time listener for a user's transactions.

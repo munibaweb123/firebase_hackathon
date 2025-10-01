@@ -10,7 +10,8 @@ import { AddTransactionDialog } from '@/components/add-transaction-dialog';
 import { mockBudgets } from '@/lib/data';
 import type { Transaction, TransactionData } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
-import { processAndSaveTransaction, onTransactionsUpdate } from '@/lib/firestore';
+import { onTransactionsUpdate, addTransaction as addManualTransaction } from '@/lib/firestore';
+import { processAndSaveTransaction } from '@/lib/agent-workflow';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { VoiceAgent } from './voice-agent';
@@ -38,9 +39,15 @@ export default function Dashboard() {
   const handleAddTransaction = async (transactionInput: string | TransactionData) => {
     if (user) {
       try {
-        // processAndSaveTransaction will trigger the AI agent workflow and save to Firestore.
-        // The real-time listener (onTransactionsUpdate) will then automatically update the UI.
-        const resultMessage = await processAndSaveTransaction(user.uid, transactionInput);
+        let resultMessage = '';
+        if (typeof transactionInput === 'string') {
+          // Use the full agent workflow for natural language input
+          resultMessage = await processAndSaveTransaction(user.uid, transactionInput);
+        } else {
+          // Use the simpler manual add for form data
+          await addManualTransaction(user.uid, transactionInput);
+          resultMessage = `Transaction "${transactionInput.description}" added successfully.`;
+        }
          toast({
           title: 'Success!',
           description: resultMessage,

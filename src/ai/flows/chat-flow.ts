@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
-import { processAndSaveTransaction } from '@/lib/firestore';
+import { addTransaction } from '@/lib/firestore';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'model']),
@@ -52,7 +52,13 @@ const addTransactionTool = ai.defineTool(
   // The tool needs the `userId` to save data, but we don't want the LLM to have to provide it.
   // We use the `custom` field in the `toolConfig` of the `generate` call below to inject it.
   async ({ userId, transactionText }: { userId: string, transactionText: string }) => {
-    return processAndSaveTransaction(userId, transactionText);
+    try {
+      await addTransaction(userId, transactionText);
+      return `Transaction "${transactionText}" was added successfully.`;
+    } catch (error) {
+      console.error(error);
+      return "There was an error adding the transaction.";
+    }
   }
 );
 
