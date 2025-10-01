@@ -47,17 +47,26 @@ const addTransactionTool = ai.defineTool(
     inputSchema: z.object({
       transactionText: z.string().describe('The natural language description of the transaction.'),
     }),
-    outputSchema: z.string(),
+    outputSchema: z.object({
+      success: z.boolean(),
+      message: z.string(),
+    }),
   },
   // The tool needs the `userId` to save data, but we don't want the LLM to have to provide it.
   // We use the `custom` field in the `toolConfig` of the `generate` call below to inject it.
   async ({ userId, transactionText }: { userId: string, transactionText: string }) => {
     try {
       await addTransaction(userId, transactionText);
-      return `Transaction "${transactionText}" was added successfully.`;
-    } catch (error) {
-      console.error(error);
-      return "There was an error adding the transaction.";
+      return {
+        success: true,
+        message: `Transaction "${transactionText}" was added successfully.`,
+      };
+    } catch (error: any) {
+      console.error('Tool error:', error);
+       return {
+        success: false,
+        message: error.message || "I couldn't figure out the details for that transaction. Could you be more specific?",
+      };
     }
   }
 );
@@ -126,7 +135,7 @@ const chatFlow = ai.defineFlow(
           maxOutputTokens: 256,
         },
         system:
-          'You are Wally, a helpful financial voice assistant for the WealthWise app. Your main job is to help users track their finances. If a user asks you to add an expense or income, you must use the `addTransaction` tool. For all other questions, answer in a clear, simple, and friendly manner.',
+          'You are Wally, a helpful financial voice assistant for the WealthWise app. Your primary job is to help users track their finances. If a user asks you to add an expense or income, you must use the `addTransaction` tool. For all other questions, answer in a clear, simple, and friendly manner.',
       });
 
       const responseText = llmResponse.text;
