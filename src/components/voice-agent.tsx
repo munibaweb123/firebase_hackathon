@@ -1,125 +1,158 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import Vapi from '@vapi-ai/web';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
-import { Mic, MicOff } from 'lucide-react';
+import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { transcribeAudio } from '@/ai/flows/speech-to-text-flow';
+import { chat } from '@/ai/flows/chat-flow';
 
-// Initialize Vapi once outside the component
-const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY!);
-
-interface TranscriptMessage {
-  role: 'user' | 'bot';
-  transcript: string;
+interface Message {
+  role: 'user' | 'model';
+  content: string;
 }
 
 export function VoiceAgent() {
-  const [isSessionActive, setIsSessionActive] = useState(false);
-  const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [transcript, setTranscript] = useState<Message[]>([]);
   const { user } = useAuth();
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
 
   useEffect(() => {
-    // Scroll to the bottom whenever transcript changes
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcript]);
 
-  useEffect(() => {
-    const handleCallStart = () => {
-      setIsSessionActive(true);
-      setTranscript([]);
-    };
-
-    const handleCallEnd = () => {
-      setIsSessionActive(false);
-    };
-
-    const handleTranscript = (message: any) => {
-      if (message.type === 'transcript' && message.transcriptType === 'final') {
-        const role = message.role === 'assistant' ? 'bot' : 'user';
-        setTranscript((prev) => [...prev, { role, transcript: message.transcript }]);
-      }
-    };
-
-    const handleFunctionCall = async (functionCall: any) => {
-      if (user) {
-        try {
-          const idToken = await user.getIdToken();
-          const response = await fetch('/api/handle-voice-command', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({ functionCall }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Failed to handle voice command:', errorData.error);
-          }
-        } catch (error) {
-          console.error('Error sending function call to backend:', error);
-        }
-      } else {
-        console.log('User not authenticated. Cannot process function call.');
-      }
-    };
-    
-    // Subscribe to Vapi events
-    vapi.on('call-start', handleCallStart);
-    vapi.on('call-end', handleCallEnd);
-    vapi.on('transcript', handleTranscript);
-    vapi.on('function-call', handleFunctionCall);
-
-    // Cleanup function to remove listeners
-    return () => {
-      vapi.off('call-start', handleCallStart);
-      vapi.off('call-end', handleCallEnd);
-      vapi.off('transcript', handleTranscript);
-      vapi.off('function-call', handleFunctionCall);
-    };
-  }, [user]);
-
-  const start = () => {
+  const handleStartRecording = async () => {
     if (!user) {
       alert('Please log in to use the voice agent.');
       return;
     }
-    vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!);
+    if (isRecording) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setIsRecording(true);
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        setIsProcessing(true);
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          const base64Audio = reader.result as string;
+          try {
+            // 1. Transcribe Audio
+            const { text: transcribedText } = await transcribeAudio({ audio: base64Audio });
+
+            if(transcribedText && transcribedText.trim() !== '') {
+               setTranscript((prev) => [...prev, { role: 'user', content: transcribedText }]);
+              
+              // 2. Get Chat Response
+              const chatResponse = await chat({
+                message: transcribedText,
+                history: transcript.slice(-10), // Pass last 10 messages as history
+              });
+
+              if (chatResponse.message) {
+                setTranscript((prev) => [...prev, { role: 'model', content: chatResponse.message }]);
+              }
+
+              // 3. Play Audio Response
+              if (chatResponse.audio) {
+                if (audioRef.current) {
+                  audioRef.current.src = chatResponse.audio;
+                  audioRef.current.play();
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error processing audio:', error);
+            // Optionally, show a toast or message to the user
+          } finally {
+            setIsProcessing(false);
+          }
+        };
+      };
+
+      mediaRecorderRef.current.start();
+    } catch (err) {
+      console.error('Error accessing microphone:', err);
+      alert('Could not access the microphone. Please check your browser permissions.');
+    }
   };
 
-  const stop = () => {
-    vapi.stop();
+  const handleStopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+       // Stop microphone tracks to turn off the indicator
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      handleStopRecording();
+    } else {
+      handleStartRecording();
+    }
   };
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Voice Agent</CardTitle>
+        <CardTitle>Talk to Wally</CardTitle>
+        <CardDescription>
+          Click the button to start recording your transaction. Click again to stop.
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex justify-center gap-4">
-          <Button onClick={start} disabled={isSessionActive}>
-            <Mic className="mr-2" /> Start Voice Agent
-          </Button>
-          <Button onClick={stop} disabled={!isSessionActive} variant="destructive">
-            <MicOff className="mr-2" /> Stop Session
-          </Button>
-        </div>
-        <div className="space-y-4 p-4 border rounded-lg h-64 overflow-y-auto bg-muted/50">
+      <CardContent className="space-y-4 flex flex-col items-center">
+        <Button
+          onClick={toggleRecording}
+          disabled={isProcessing}
+          className={`w-24 h-24 rounded-full flex items-center justify-center transition-colors ${
+            isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
+          }`}
+        >
+          {isProcessing ? (
+            <Loader2 className="h-10 w-10 animate-spin" />
+          ) : isRecording ? (
+            <MicOff className="h-10 w-10" />
+          ) : (
+            <Mic className="h-10 w-10" />
+          )}
+        </Button>
+        
+        <div className="w-full space-y-4 p-4 border rounded-lg h-64 overflow-y-auto bg-muted/50">
            {transcript.map((item, index) => (
             <div key={index} className="flex items-start gap-3">
-              <Badge variant={item.role === 'user' ? 'secondary' : 'outline'} className="mt-1">
+              <Badge variant={item.role === 'user' ? 'secondary' : 'outline'} className="mt-1 capitalize">
                 {item.role === 'user' ? 'You' : 'Wally'}
               </Badge>
-              <p className="flex-1">{item.transcript}</p>
+              <p className="flex-1">{item.content}</p>
             </div>
           ))}
+           {isProcessing && (
+              <div className="flex items-center gap-3">
+                 <Badge variant='outline' className="mt-1 capitalize">Wally</Badge>
+                 <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+           )}
            <div ref={transcriptEndRef} />
         </div>
+        <audio ref={audioRef} className="hidden" />
       </CardContent>
     </Card>
   );
