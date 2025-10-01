@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -61,7 +62,7 @@ export function VoiceAgent({ userId, pastTransactions, budgets }: VoiceAgentProp
             // 1. Transcribe Audio
             const { text: transcribedText } = await transcribeAudio({ audio: base64Audio });
 
-            if(transcribedText && transcribedText.trim() !== '') {
+            if(transcribedText && transcribedText.trim() !== '' && userId) {
                setTranscript((prev) => [...prev, { role: 'user', content: transcribedText }]);
               
               // 2. Get Chat Response (which may use tools)
@@ -87,7 +88,7 @@ export function VoiceAgent({ userId, pastTransactions, budgets }: VoiceAgentProp
             }
           } catch (error) {
             console.error('Error processing audio:', error);
-            // Optionally, show a toast or message to the user
+            setTranscript((prev) => [...prev, { role: 'model', content: "Sorry, I ran into an issue. Please try again." }]);
           } finally {
             setIsProcessing(false);
           }
