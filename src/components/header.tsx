@@ -55,7 +55,7 @@ export function Header() {
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:px-6">
       <Link href="/" className="flex items-center gap-2">
         <Image src="/logo.png" alt="WealthWise logo" width={32} height={32} className="h-8 w-8" />
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
+        <h1 className="text-xl font-bold tracking-tight text-primary">
           WealthWise
         </h1>
       </Link>
