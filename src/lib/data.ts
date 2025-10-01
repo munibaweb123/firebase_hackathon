@@ -85,14 +85,21 @@ export const mockBudgets: Budget[] = [
   { category: 'Other', limit: 200 },
 ];
 
-export const categories = [
+export const expenseCategories = [
   'Food',
   'Transport',
   'Entertainment',
   'Housing',
   'Utilities',
   'Health',
-  'Salary',
-  'Freelance',
   'Other',
 ];
+
+export const incomeCategories = [
+  'Salary',
+  'Freelance',
+  'Investment',
+  'Other',
+];
+
+export const allCategories = [...new Set([...expenseCategories, ...incomeCategories])];

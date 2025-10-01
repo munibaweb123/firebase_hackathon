@@ -36,11 +36,11 @@ import {
 import { CalendarIcon, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { TransactionData } from '@/lib/types';
-import { categories } from '@/lib/data';
+import { expenseCategories, incomeCategories, allCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
 import { Separator } from './ui/separator';
@@ -88,6 +88,14 @@ export function AddTransactionDialog({
       date: new Date(),
     },
   });
+  
+  const transactionType = useWatch({
+    control: form.control,
+    name: 'type',
+  });
+
+  const categories = transactionType === 'income' ? incomeCategories : expenseCategories;
+
 
   const handleCategorize = async () => {
     if (!naturalLanguageInput) {
@@ -102,9 +110,22 @@ export function AddTransactionDialog({
     try {
       const result = await categorizeTransaction({ text: naturalLanguageInput });
       if (result) {
+        const isIncome = incomeCategories.includes(result.category as any);
+        const newType = isIncome ? 'income' : 'expense';
+        
         form.setValue('description', result.description);
         form.setValue('amount', result.amount);
-        form.setValue('category', result.category);
+        form.setValue('type', newType);
+        
+        // Ensure the category exists for the type
+        const availableCategories = newType === 'income' ? incomeCategories : expenseCategories;
+        if (availableCategories.includes(result.category as any)) {
+            form.setValue('category', result.category);
+        } else {
+            // Fallback if AI gives a category not matching the type
+            form.setValue('category', 'Other'); 
+        }
+
         toast({
           title: 'Success!',
           description: 'Transaction details have been filled in.',
@@ -204,7 +225,10 @@ export function AddTransactionDialog({
                     <FormLabel>Type</FormLabel>
                     <FormControl>
                       <RadioGroup
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          form.setValue('category', ''); // Reset category on type change
+                        }}
                         defaultValue={field.value}
                         className="flex items-center space-x-4 pt-1"
                       >

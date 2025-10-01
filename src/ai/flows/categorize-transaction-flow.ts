@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { categories } from '@/lib/data';
+import { allCategories } from '@/lib/data';
 
 const CategorizeTransactionInputSchema = z.object({
   text: z.string().describe('The natural language text describing a transaction.'),
@@ -20,7 +20,7 @@ export type CategorizeTransactionInput = z.infer<typeof CategorizeTransactionInp
 const CategorizeTransactionOutputSchema = z.object({
   description: z.string().describe('A concise description of the transaction.'),
   amount: z.number().describe('The numerical amount of the transaction.'),
-  category: z.enum(categories as [string, ...string[]]).describe('The most likely category for this transaction.'),
+  category: z.enum(allCategories as [string, ...string[]]).describe('The most likely category for this transaction.'),
 });
 export type CategorizeTransactionOutput = z.infer<typeof CategorizeTransactionOutputSchema>;
 
@@ -37,7 +37,7 @@ const categorizeTransactionPrompt = ai.definePrompt({
   prompt: `You are an expert at parsing and categorizing financial transactions.
   Analyze the following text and extract the transaction details.
   The currency is assumed to be USD unless specified otherwise.
-  The category must be one of the following: ${categories.join(', ')}.
+  The category must be one of the following: ${allCategories.join(', ')}.
 
   Text: {{{text}}}
   `,
