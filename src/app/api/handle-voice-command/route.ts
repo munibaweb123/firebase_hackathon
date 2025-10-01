@@ -1,9 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import { addTransaction } from '@/lib/firestore';
+import { processAndSaveTransaction } from '@/lib/firestore';
 import * as admin from 'firebase-admin';
-import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
-import { incomeCategories } from '@/lib/data';
 
 // Initialize Firebase Admin SDK
 // This is necessary for verifying the user's auth token on the server-side.
@@ -53,28 +51,11 @@ export async function POST(request: Request) {
        return NextResponse.json({ error: 'Invalid parameters: description text is missing.' }, { status: 400 });
     }
 
-    // Use our AI flow to parse and categorize the raw text.
-    const categorizedResult = await categorizeTransaction({ text: rawText });
+    // Use the centralized "Firebase Integration Agent" to process and save the transaction.
+    // This will trigger the full AI agent workflow.
+    await processAndSaveTransaction(userId, rawText);
 
-    const { description, amount, category } = categorizedResult;
-    
-    if (typeof amount !== 'number' || typeof category !== 'string' || typeof description !== 'string') {
-        return NextResponse.json({ error: 'AI categorization failed to return valid parameters.' }, { status: 400 });
-    }
-
-    // Determine if it's income or expense based on the categorized result.
-    const transactionType = incomeCategories.includes(category as (typeof incomeCategories)[number]) ? 'income' : 'expense';
-
-    // Save the structured transaction to Firestore.
-    await addTransaction(userId, {
-      amount,
-      category,
-      description,
-      date: new Date(),
-      type: transactionType,
-    });
-
-    return NextResponse.json({ success: true, message: 'Transaction added successfully.' });
+    return NextResponse.json({ success: true, message: 'Transaction processed and added successfully.' });
   } catch (error) {
     console.error('Error processing addExpense function call:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

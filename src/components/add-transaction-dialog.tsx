@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -40,7 +41,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { TransactionData } from '@/lib/types';
-import { expenseCategories, incomeCategories, allCategories } from '@/lib/data';
+import { expenseCategories, incomeCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
 import { Separator } from './ui/separator';
@@ -49,7 +50,7 @@ import { Label } from './ui/label';
 interface AddTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTransactionAdd: (transaction: TransactionData) => void;
+  onTransactionAdd: (transaction: string | TransactionData) => void;
 }
 
 const formSchema = z.object({
@@ -97,7 +98,7 @@ export function AddTransactionDialog({
   const categories = transactionType === 'income' ? incomeCategories : expenseCategories;
 
 
-  const handleCategorize = async () => {
+  const handleAiCategorize = async () => {
     if (!naturalLanguageInput) {
       toast({
         variant: 'destructive',
@@ -108,35 +109,17 @@ export function AddTransactionDialog({
     }
     setAiLoading(true);
     try {
-      const result = await categorizeTransaction({ text: naturalLanguageInput });
-      if (result) {
-        const isIncome = incomeCategories.includes(result.category as (typeof incomeCategories)[number]);
-        const newType = isIncome ? 'income' : 'expense';
-        
-        form.setValue('description', result.description);
-        form.setValue('amount', result.amount);
-        form.setValue('type', newType);
-        
-        // Ensure the category exists for the type
-        const availableCategories = newType === 'income' ? incomeCategories : expenseCategories;
-        if (availableCategories.includes(result.category as any)) {
-            form.setValue('category', result.category);
-        } else {
-            // Fallback if AI gives a category not matching the type
-            form.setValue('category', 'Other'); 
-        }
-
-        toast({
-          title: 'Success!',
-          description: 'Transaction details have been filled in.',
-        });
-      }
+      // Use the full AI agent workflow
+      onTransactionAdd(naturalLanguageInput);
+      setNaturalLanguageInput('');
+      form.reset();
+      onOpenChange(false);
     } catch (error) {
-      console.error(error);
+       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'AI Categorization Failed',
-        description: 'Could not categorize the transaction. Please fill it manually.',
+        title: 'AI Processing Failed',
+        description: 'Could not process the transaction using AI. Please fill it manually.',
       });
     } finally {
       setAiLoading(false);
@@ -144,12 +127,8 @@ export function AddTransactionDialog({
   };
 
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onManualSubmit(values: z.infer<typeof formSchema>) {
     onTransactionAdd(values);
-    toast({
-      title: 'Success!',
-      description: 'Your transaction has been added.',
-    });
     form.reset();
     setNaturalLanguageInput('');
     onOpenChange(false);
@@ -161,24 +140,24 @@ export function AddTransactionDialog({
         <DialogHeader>
           <DialogTitle>Add Transaction</DialogTitle>
           <DialogDescription>
-            You can describe your transaction for the AI to categorize, or fill it manually.
+            Describe your transaction for the AI to process it, or fill the form manually.
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="natural-language-input">Describe Transaction</Label>
+              <Label htmlFor="natural-language-input">AI-Powered Entry</Label>
                <div className="flex items-center gap-2">
                 <Input
                   id="natural-language-input"
-                  placeholder="e.g., spent 25 dollars on lunch"
+                  placeholder="e.g., spent 25 dollars on lunch with friends"
                   value={naturalLanguageInput}
                   onChange={(e) => setNaturalLanguageInput(e.target.value)}
                   disabled={aiLoading}
                 />
-                <Button onClick={handleCategorize} disabled={aiLoading}>
+                <Button onClick={handleAiCategorize} disabled={aiLoading}>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  {aiLoading ? 'Analyzing...' : 'Categorize'}
+                  {aiLoading ? 'Processing...' : 'Process'}
                 </Button>
               </div>
             </div>
@@ -189,7 +168,7 @@ export function AddTransactionDialog({
         </div>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onManualSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}

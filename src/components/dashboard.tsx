@@ -10,11 +10,13 @@ import { AddTransactionDialog } from '@/components/add-transaction-dialog';
 import { mockBudgets } from '@/lib/data';
 import type { Transaction, TransactionData } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
-import { addTransaction, onTransactionsUpdate } from '@/lib/firestore';
+import { processAndSaveTransaction, onTransactionsUpdate } from '@/lib/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddTransactionOpen, setAddTransactionOpen] = useState(false);
@@ -32,14 +34,23 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  const handleAddTransaction = async (newTransactionData: TransactionData) => {
+  const handleAddTransaction = async (transactionInput: string | TransactionData) => {
     if (user) {
       try {
-        // The real-time listener will automatically update the UI,
-        // so we don't need to manually refetch or set state here.
-        await addTransaction(user.uid, newTransactionData);
+        // processAndSaveTransaction will trigger the AI agent workflow and save to Firestore.
+        // The real-time listener (onTransactionsUpdate) will then automatically update the UI.
+        await processAndSaveTransaction(user.uid, transactionInput);
+         toast({
+          title: 'Success!',
+          description: 'Your transaction has been processed and added.',
+        });
       } catch (error) {
-        console.error('Failed to add transaction:', error);
+        console.error('Failed to process and add transaction:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Processing Error',
+          description: 'Failed to process the transaction.',
+        });
       }
     }
   };

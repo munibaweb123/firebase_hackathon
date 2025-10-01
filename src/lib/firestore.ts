@@ -11,7 +11,9 @@ import {
   Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Transaction, TransactionData } from './types';
+import type { Budget, Transaction, TransactionData } from './types';
+import { processTransaction } from '@/ai/flows/transaction-manager-flow';
+import { mockBudgets } from './data';
 
 // Collection References
 export const getUsersCollection = () => collection(db, 'users');
@@ -27,6 +29,98 @@ export const getGoalsCollection = (userId: string) =>
 
 export const getAlertsCollection = (userId: string) =>
   collection(getUsersCollection(), `${userId}/alerts`);
+
+export const getRecurringExpensesCollection = (userId: string) =>
+    collection(getUsersCollection(), `${userId}/recurring_expenses`);
+
+export const getInsightsCollection = (userId: string) =>
+    collection(getUsersCollection(), `${userId}/insights`);
+
+
+/**
+ * Processes a raw transaction input (either from text or structured data),
+ * runs it through the AI agent workflow, and saves the results to Firestore.
+ * This function embodies the "Firebase Integration Agent" persona.
+ * @param userId - The ID of the user.
+ * @param input - Can be a raw text string or structured transaction data.
+ */
+export async function processAndSaveTransaction(
+  userId: string,
+  input: string | TransactionData
+): Promise<void> {
+  if (!userId) {
+    throw new Error('User ID is required to process a transaction.');
+  }
+
+  try {
+    const pastTransactions = await getTransactions(userId);
+    const budgets: Budget[] = mockBudgets; 
+
+    // 1. Get structured data from the AI Manager Agent
+    const rawInputText = typeof input === 'string' ? input : `${input.description} ${input.amount}`;
+    const agentResult = await processTransaction({
+      rawInput: rawInputText,
+      pastTransactions: pastTransactions.map(t => ({...t, date: new Date(t.date)})),
+      budgets: budgets,
+    });
+
+    const { transaction, category, recurring, insights, alerts } = agentResult;
+
+    // 2. Save categorized transaction
+    const transactionsCol = getTransactionsCollection(userId);
+    const transactionDoc = {
+      description: transaction.description,
+      amount: transaction.amount,
+      category: category,
+      type: category === 'Salary' || category === 'Freelance' || category === 'Investment' ? 'income' : 'expense',
+      date: Timestamp.now(),
+    };
+    await addDoc(transactionsCol, transactionDoc);
+
+    // 3. Save recurring expense data if applicable
+    if (recurring) {
+      const recurringCol = getRecurringExpensesCollection(userId);
+      await addDoc(recurringCol, {
+        ...transactionDoc,
+        recurring: true,
+      });
+    }
+
+    // 4. Save insights
+    if (insights && insights.length > 0) {
+        const insightsCol = getInsightsCollection(userId);
+        for (const insight of insights) {
+            await addDoc(insightsCol, {
+                message: insight,
+                date: Timestamp.now(),
+            });
+        }
+    }
+
+    // 5. Save alerts
+    if (alerts && alerts.length > 0) {
+        const alertsCol = getAlertsCollection(userId);
+        for (const alert of alerts) {
+            await addDoc(alertsCol, {
+                message: alert,
+                date: Timestamp.now(),
+                read: false,
+            });
+        }
+    }
+    
+    // This part would handle FCM/Email, but is out of scope for now.
+    // if (alerts && alerts.length > 0) {
+    //   console.log("Forwarding alerts to notification service...");
+    // }
+
+  } catch (error) {
+    console.error('Error in Firebase Integration Agent workflow:', error);
+    throw new Error('Failed to process and save transaction.');
+  }
+}
+
+
 
 /**
  * Example function to add a transaction for a specific user.
