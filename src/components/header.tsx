@@ -1,6 +1,5 @@
 'use client';
 import {
-  Landmark,
   LogOut,
   User as UserIcon,
   LogIn,
@@ -8,6 +7,7 @@ import {
   Menu,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -54,7 +54,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:px-6">
       <Link href="/" className="flex items-center gap-2">
-        <Landmark className="h-6 w-6 text-primary" />
+        <Image src="/logo.png" alt="WealthWise logo" width={32} height={32} className="h-8 w-8" />
         <h1 className="text-xl font-bold tracking-tight text-foreground">
           WealthWise
         </h1>
