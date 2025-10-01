@@ -6,22 +6,38 @@ import { Header } from '@/components/header';
 import { SummaryCards } from '@/components/summary-cards';
 import { TransactionsTable } from '@/components/transactions-table';
 import { SpendingAnalysis } from '@/components/spending-analysis';
-import { AddTransactionDialog } from '@/components/add-transaction-dialog';
+import { TransactionDialog } from '@/components/transaction-dialog';
 import { mockBudgets } from '@/lib/data';
 import type { Transaction, TransactionData } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
-import { onTransactionsUpdate, addTransaction as addManualTransaction } from '@/lib/firestore';
+import { onTransactionsUpdate, addManualTransaction, updateTransaction, deleteTransaction } from '@/lib/firestore';
 import { processAndSaveTransaction } from '@/lib/agent-workflow';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { VoiceAgent } from './voice-agent';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAddTransactionOpen, setAddTransactionOpen] = useState(false);
+  
+  // State for dialogs
+  const [isTransactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | undefined>(undefined);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | undefined>(undefined);
 
   useEffect(() => {
     if (user) {
@@ -36,32 +52,75 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  const handleAddTransaction = async (transactionInput: string | TransactionData) => {
-    if (user) {
-      try {
-        let resultMessage = '';
-        if (typeof transactionInput === 'string') {
-          // Use the full agent workflow for natural language input
-          resultMessage = await processAndSaveTransaction(user.uid, transactionInput);
+  const handleOpenAddDialog = () => {
+    setTransactionToEdit(undefined);
+    setTransactionDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (transaction: Transaction) => {
+    setTransactionToEdit(transaction);
+    setTransactionDialogOpen(true);
+  };
+  
+  const handleOpenDeleteDialog = (transaction: Transaction) => {
+    setTransactionToDelete(transaction);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleTransactionSubmit = async (transactionInput: string | TransactionData) => {
+    if (!user) return;
+  
+    try {
+      if (typeof transactionInput === 'string') {
+        // Voice Agent Input
+        const resultMessage = await processAndSaveTransaction(user.uid, transactionInput);
+        toast({ title: 'Success!', description: resultMessage });
+      } else {
+        // Manual Dialog Input
+        if (transactionToEdit) {
+          // Update
+          await updateTransaction(user.uid, transactionToEdit.id, transactionInput);
+          toast({ title: 'Success!', description: 'Transaction updated successfully.' });
         } else {
-          // Use the simpler manual add for form data
+          // Create
           await addManualTransaction(user.uid, transactionInput);
-          resultMessage = `Transaction "${transactionInput.description}" added successfully.`;
+          toast({ title: 'Success!', description: 'Transaction added successfully.' });
         }
-         toast({
-          title: 'Success!',
-          description: resultMessage,
-        });
-      } catch (error) {
-        console.error('Failed to process and add transaction:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Processing Error',
-          description: 'Failed to process the transaction.',
-        });
       }
+    } catch (error) {
+      console.error('Failed to process transaction:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to save the transaction.',
+      });
+    } finally {
+        setTransactionDialogOpen(false);
+        setTransactionToEdit(undefined);
     }
   };
+
+  const handleDeleteConfirm = async () => {
+    if (!user || !transactionToDelete) return;
+
+    try {
+      await deleteTransaction(user.uid, transactionToDelete.id);
+      toast({
+        title: 'Success!',
+        description: `Transaction "${transactionToDelete.description}" deleted.`,
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to delete transaction.',
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setTransactionToDelete(undefined);
+    }
+  };
+
 
   return (
     <div className="flex flex-col">
@@ -84,7 +143,9 @@ export default function Dashboard() {
               <div className="lg:col-span-2">
                 <TransactionsTable
                   transactions={transactions}
-                  onAddTransaction={() => setAddTransactionOpen(true)}
+                  onAddTransaction={handleOpenAddDialog}
+                  onEditTransaction={handleOpenEditDialog}
+                  onDeleteTransaction={handleOpenDeleteDialog}
                 />
               </div>
               <div>
@@ -99,11 +160,28 @@ export default function Dashboard() {
           <SpendingAnalysis transactions={transactions} budgets={mockBudgets} />
         </div>
       </main>
-      <AddTransactionDialog
-        open={isAddTransactionOpen}
-        onOpenChange={setAddTransactionOpen}
-        onTransactionAdd={handleAddTransaction}
+      <TransactionDialog
+        key={transactionToEdit?.id ?? 'new'}
+        open={isTransactionDialogOpen}
+        onOpenChange={setTransactionDialogOpen}
+        onTransactionSubmit={handleTransactionSubmit}
+        transaction={transactionToEdit}
       />
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the transaction
+              for "{transactionToDelete?.description}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

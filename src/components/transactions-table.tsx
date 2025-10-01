@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -19,12 +20,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Transaction } from '@/lib/types';
-import { ArrowUpDown, Plus } from 'lucide-react';
+import { ArrowUpDown, Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface TransactionsTableProps {
   transactions: Transaction[];
   onAddTransaction: () => void;
+  onEditTransaction: (transaction: Transaction) => void;
+  onDeleteTransaction: (transaction: Transaction) => void;
 }
 
 type SortKey = keyof Transaction;
@@ -32,6 +41,8 @@ type SortKey = keyof Transaction;
 export function TransactionsTable({
   transactions,
   onAddTransaction,
+  onEditTransaction,
+  onDeleteTransaction,
 }: TransactionsTableProps) {
   const [sortKey, setSortKey] = React.useState<SortKey>('date');
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>(
@@ -111,6 +122,7 @@ export function TransactionsTable({
               <SortableHeader sortKey="category">Category</SortableHeader>
               <TableHead>Type</TableHead>
               <SortableHeader sortKey="amount">Amount</SortableHeader>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -141,6 +153,26 @@ export function TransactionsTable({
                 >
                   {transaction.type === 'income' ? '+' : '-'}
                   {formatCurrency(transaction.amount)}
+                </TableCell>
+                <TableCell className="text-right">
+                   <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEditTransaction(transaction)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onDeleteTransaction(transaction)} className="text-destructive">
+                         <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

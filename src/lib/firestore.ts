@@ -9,6 +9,9 @@ import {
   query,
   onSnapshot,
   Unsubscribe,
+  updateDoc,
+  deleteDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Budget, Transaction, TransactionData } from './types';
@@ -46,13 +49,22 @@ export const getInsightsCollection = (userId: string) =>
 export async function addTransaction(
   userId: string,
   transactionText: string
-): Promise<void> {
+): Promise<{ success: boolean; message: string; }> {
   if (!userId) {
-    throw new Error('User ID is required to add a transaction.');
+     return {
+        success: false,
+        message: "I'm sorry, I wasn't able to add this transaction. User ID is required to add a transaction.",
+      };
   }
   try {
     // 1. Categorize transaction
     const categorized = await categorizeTransaction({ text: transactionText });
+    if (!categorized.category || !categorized.amount) {
+         return {
+            success: false,
+            message: "I couldn't figure out the details for that transaction. Could you be more specific?",
+         };
+    }
 
     // 2. Determine type
     const type = incomeCategories.includes(categorized.category) ? 'income' : 'expense';
@@ -66,9 +78,16 @@ export async function addTransaction(
       type: type,
       date: Timestamp.now(),
     });
+     return {
+        success: true,
+        message: `Transaction "${categorized.description}" was added successfully.`,
+      };
   } catch (error) {
     console.error('Error adding transaction via tool:', error);
-    throw new Error('Failed to add transaction.');
+    return {
+        success: false,
+        message: "There was an error adding the transaction. Please try again.",
+      };
   }
 }
 
@@ -92,6 +111,49 @@ export async function addManualTransaction(
   } catch (error) {
     console.error('Error adding manual transaction:', error);
     throw new Error('Failed to add transaction.');
+  }
+}
+
+/**
+ * Updates an existing transaction.
+ * @param userId - The ID of the user.
+ * @param transactionId - The ID of the transaction to update.
+ * @param transactionData - The new data for the transaction.
+ */
+export async function updateTransaction(
+  userId: string,
+  transactionId: string,
+  transactionData: TransactionData
+): Promise<void> {
+  try {
+    const transactionRef = doc(getTransactionsCollection(userId), transactionId);
+    const type = incomeCategories.includes(transactionData.category) ? 'income' : 'expense';
+    await updateDoc(transactionRef, {
+        ...transactionData,
+        type: type,
+        date: Timestamp.fromDate(new Date(transactionData.date)),
+    });
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+    throw new Error('Failed to update transaction.');
+  }
+}
+
+/**
+ * Deletes a transaction.
+ * @param userId - The ID of the user.
+ * @param transactionId - The ID of the transaction to delete.
+ */
+export async function deleteTransaction(
+  userId: string,
+  transactionId: string
+): Promise<void> {
+  try {
+    const transactionRef = doc(getTransactionsCollection(userId), transactionId);
+    await deleteDoc(transactionRef);
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    throw new Error('Failed to delete transaction.');
   }
 }
 

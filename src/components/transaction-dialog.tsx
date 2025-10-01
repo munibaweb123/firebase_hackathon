@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -40,18 +40,17 @@ import { format } from 'date-fns';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { TransactionData } from '@/lib/types';
+import type { Transaction, TransactionData } from '@/lib/types';
 import { expenseCategories, incomeCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
 import { Separator } from './ui/separator';
 import { Label } from './ui/label';
-import { processAndSaveTransaction } from '@/lib/agent-workflow';
 
-interface AddTransactionDialogProps {
+interface TransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTransactionAdd: (transaction: string | TransactionData) => void;
+  onTransactionSubmit: (transaction: string | TransactionData) => void;
+  transaction?: Transaction;
 }
 
 const formSchema = z.object({
@@ -72,24 +71,42 @@ const formSchema = z.object({
   }),
 });
 
-export function AddTransactionDialog({
+export function TransactionDialog({
   open,
   onOpenChange,
-  onTransactionAdd,
-}: AddTransactionDialogProps) {
+  onTransactionSubmit,
+  transaction,
+}: TransactionDialogProps) {
   const { toast } = useToast();
   const [aiLoading, setAiLoading] = useState(false);
   const [naturalLanguageInput, setNaturalLanguageInput] = useState('');
 
+  const isEditMode = !!transaction;
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      description: '',
-      amount: 0,
-      type: 'expense',
-      date: new Date(),
-    },
   });
+
+  useEffect(() => {
+    if (isEditMode && transaction) {
+      form.reset({
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        date: new Date(transaction.date),
+      });
+    } else {
+      form.reset({
+        description: '',
+        amount: 0,
+        type: 'expense',
+        date: new Date(),
+        category: '',
+      });
+    }
+  }, [transaction, isEditMode, form]);
+
   
   const transactionType = useWatch({
     control: form.control,
@@ -100,6 +117,7 @@ export function AddTransactionDialog({
 
 
   const handleAiCategorize = async () => {
+    if (isEditMode) return; // Disable AI for editing
     if (!naturalLanguageInput) {
       toast({
         variant: 'destructive',
@@ -111,10 +129,8 @@ export function AddTransactionDialog({
     setAiLoading(true);
     try {
       // Use the full AI agent workflow
-      onTransactionAdd(naturalLanguageInput);
+      onTransactionSubmit(naturalLanguageInput);
       setNaturalLanguageInput('');
-      form.reset();
-      onOpenChange(false);
     } catch (error) {
        console.error(error);
       toast({
@@ -129,45 +145,46 @@ export function AddTransactionDialog({
 
 
   function onManualSubmit(values: z.infer<typeof formSchema>) {
-    const type = incomeCategories.includes(values.category) ? 'income' : 'expense';
-    onTransactionAdd({...values, type});
-    form.reset();
+    onTransactionSubmit(values);
     setNaturalLanguageInput('');
-    onOpenChange(false);
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>Add Transaction</DialogTitle>
-          <DialogDescription>
-            Describe your transaction for the AI to process it, or fill the form manually.
-          </DialogDescription>
+          <DialogTitle>{isEditMode ? 'Edit' : 'Add'} Transaction</DialogTitle>
+          {!isEditMode && (
+            <DialogDescription>
+              Describe your transaction for the AI to process it, or fill the form manually.
+            </DialogDescription>
+          )}
         </DialogHeader>
         
-        <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="natural-language-input">AI-Powered Entry</Label>
-               <div className="flex items-center gap-2">
-                <Input
-                  id="natural-language-input"
-                  placeholder="e.g., spent 25 dollars on lunch with friends"
-                  value={naturalLanguageInput}
-                  onChange={(e) => setNaturalLanguageInput(e.target.value)}
-                  disabled={aiLoading}
-                />
-                <Button onClick={handleAiCategorize} disabled={aiLoading}>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  {aiLoading ? 'Processing...' : 'Process'}
-                </Button>
+        {!isEditMode && (
+          <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="natural-language-input">AI-Powered Entry</Label>
+                 <div className="flex items-center gap-2">
+                  <Input
+                    id="natural-language-input"
+                    placeholder="e.g., spent 25 dollars on lunch with friends"
+                    value={naturalLanguageInput}
+                    onChange={(e) => setNaturalLanguageInput(e.target.value)}
+                    disabled={aiLoading}
+                  />
+                  <Button onClick={handleAiCategorize} disabled={aiLoading}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {aiLoading ? 'Processing...' : 'Process'}
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <Separator className="my-4" />
+              <Separator className="my-4" />
 
-            <p className="text-center text-sm text-muted-foreground">Or add manually</p>
-        </div>
+              <p className="text-center text-sm text-muted-foreground">Or add manually</p>
+          </div>
+        )}
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onManualSubmit)} className="space-y-4">
@@ -295,7 +312,7 @@ export function AddTransactionDialog({
               />
             </div>
             <DialogFooter>
-              <Button type="submit">Save Transaction</Button>
+              <Button type="submit">{isEditMode ? 'Save Changes' : 'Save Transaction'}</Button>
             </DialogFooter>
           </form>
         </Form>
