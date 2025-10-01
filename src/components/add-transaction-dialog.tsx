@@ -229,7 +229,7 @@ export function AddTransactionDialog({
                           field.onChange(value);
                           form.setValue('category', ''); // Reset category on type change
                         }}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="flex items-center space-x-4 pt-1"
                       >
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -256,7 +256,7 @@ export function AddTransactionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
