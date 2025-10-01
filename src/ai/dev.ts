@@ -9,3 +9,4 @@ import '@/ai/flows/categorize-transaction-flow.ts';
 import '@/ai/flows/recurring-expense-agent.ts';
 import '@/ai/flows/budget-alert-agent.ts';
 import '@/ai/flows/transaction-manager-flow.ts';
+import '@/ai/flows/hello-flow.ts';
