@@ -12,7 +12,11 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ArrowRight, Mic, Shield, Smartphone, BarChart, Sparkles } from 'lucide-react';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+const SplineHero = dynamic(() => import('@/components/spline-hero'), {
+  ssr: false,
+});
 
 
 const faqItems = [
@@ -102,15 +106,8 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="relative flex items-center justify-center">
-              <Image
-                src="/hero.png"
-                alt="AI assistant interacting with financial data"
-                width={800}
-                height={600}
-                className="rounded-lg"
-                data-ai-hint="financial workspace"
-              />
+            <div className="relative flex items-center justify-center h-[400px] lg:h-[600px]">
+              <SplineHero />
             </div>
           </div>
         </section>
