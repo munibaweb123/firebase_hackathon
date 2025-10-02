@@ -83,5 +83,3 @@ const spendingInsightsWithAIFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

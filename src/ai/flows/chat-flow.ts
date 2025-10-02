@@ -267,5 +267,3 @@ Core Instructions:
     }
   }
 );
-
-    
