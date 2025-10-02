@@ -8,6 +8,9 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { stripe } from './stripe';
 import wav from 'wav';
 import { allCategories, expenseCategories, incomeCategories } from './data';
+import { Document, index, retrieve } from 'genkit/ai';
+import { memory } from 'genkit/evaluator';
+import { knowledgeBase } from './kb-data';
 
 initializeApp();
 const db = getFirestore();
@@ -18,6 +21,24 @@ export const ai = genkit({
       apiKey: process.env.GOOGLE_API_KEY,
     }),
   ],
+});
+
+// Setup a simple in-memory retriever for RAG
+const knowledgeBaseRetriever = memory(
+    knowledgeBase.map(
+      (text, index) =>
+        new Document({
+          content: [{ text }],
+          metadata: {
+            index: index,
+          },
+        })
+    )
+  );
+
+index({
+    retriever: knowledgeBaseRetriever,
+    embedder: 'googleai/embedding-004',
 });
 
 // Hello Flow
@@ -174,9 +195,14 @@ const chatFlow = ai.defineFlow(
       try {
         const history = input.history.map((msg) => ({ role: msg.role, content: [{ text: msg.content }] }));
         const cleanedMessage = input.message.replace(/\\[.*?\\]/g, '').trim();
+
+        // RAG step: Retrieve relevant context
+        const context = await retrieve({ retriever: knowledgeBaseRetriever, query: cleanedMessage, options: { k: 2 } });
+        const contextText = context.map(c => c.text()).join('\n\n');
+
         const llmResponse = await ai.generate({
           history,
-          prompt: cleanedMessage,
+          prompt: `CONTEXT: ${contextText}\n\nQUESTION: ${cleanedMessage}`,
           tools: [addTransactionTool, createPaymentTool],
           toolConfig: {
             custom: (toolRequest) => {
@@ -185,7 +211,7 @@ const chatFlow = ai.defineFlow(
             },
           },
           config: { maxOutputTokens: 256 },
-          system: `You are Wally, a friendly financial assistant.`,
+          system: `You are Wally, a friendly financial assistant. If the user's question is about policies, terms, or how the app works, use the provided CONTEXT to answer. Otherwise, act as a general financial assistant.`,
         });
         const responseText = llmResponse.text;
         const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
