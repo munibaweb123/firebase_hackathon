@@ -60,8 +60,8 @@ export function VoiceAgent({ userId, pastTransactions, budgets }: VoiceAgentProp
         reader.onloadend = async () => {
           const base64Audio = reader.result as string;
           try {
-            const transcribeAudioFlow = httpsCallable(functions, 'transcribeAudioFlow');
-            const chatFlow = httpsCallable(functions, 'chatFlow');
+            const transcribeAudioFlow = httpsCallable(functions, 'transcribeAudioFlowFn');
+            const chatFlow = httpsCallable(functions, 'chatFlowFn');
 
             // 1. Transcribe Audio
             const transcriptionResult = (await transcribeAudioFlow({ audio: base64Audio })).data as any;
