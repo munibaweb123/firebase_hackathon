@@ -7,7 +7,7 @@
  * - TranscribeAudioOutput - The return type for the transcribeAudio function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/client';
 import { z } from 'zod';
 
 const TranscribeAudioInputSchema = z.object({

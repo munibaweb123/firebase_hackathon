@@ -7,7 +7,7 @@
  * - HelloOutput - The return type for the hello function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/client';
 import { z } from 'zod';
 
 const HelloInputSchema = z.object({

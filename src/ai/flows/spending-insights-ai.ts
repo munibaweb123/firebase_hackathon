@@ -9,7 +9,7 @@
  * - SpendingInsightsWithAIOutput - The return type for the spendingInsightsWithAI function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai} from '@/ai/client';
 import {z} from 'zod';
 
 const SpendingInsightsWithAIInputSchema = z.object({

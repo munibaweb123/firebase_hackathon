@@ -9,7 +9,7 @@
  * - ProcessTransactionOutput - The return type for the processTransaction function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/client';
 import { z } from 'zod';
 import type { Transaction, Budget } from '@/lib/types';
 

@@ -8,7 +8,7 @@
  * - ChatOutput - The return type for the chat function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai} from '@/ai/client';
 import {z} from 'zod';
 import wav from 'wav';
 import { addTransaction as saveTransactionToDb } from '@/lib/firestore';

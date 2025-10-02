@@ -8,7 +8,7 @@
  * - SavingsPlansOutput - The return type for the generateSavingsPlans function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai} from '@/ai/client';
 import {z} from 'zod';
 
 const SavingsPlansInputSchema = z.object({

@@ -8,7 +8,7 @@
  * - BudgetAlertOutput - The return type for the generateBudgetAlerts function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/client';
 import { z } from 'zod';
 
 const BudgetAlertInputSchema = z.object({

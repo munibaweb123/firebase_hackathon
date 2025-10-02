@@ -8,7 +8,7 @@
  * - CategorizeTransactionOutput - The return type for the categorizeTransaction function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/client';
 import { z } from 'zod';
 import { allCategories, expenseCategories } from '@/lib/data';
 

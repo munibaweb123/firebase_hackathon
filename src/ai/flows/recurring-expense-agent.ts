@@ -8,7 +8,7 @@
  * - RecurringExpenseOutput - The return type for the checkForRecurringExpense function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/client';
 import { z } from 'zod';
 import type { Transaction } from '@/lib/types';
 
