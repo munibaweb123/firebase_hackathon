@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -36,7 +37,7 @@ export async function processAndSaveTransaction(
     const pastTransactions = await getTransactions(userId);
     const budgets: Budget[] = []; // Simplified for now
 
-    const transactionManagerFlow = httpsCallable(functions, 'transactionManagerFlow');
+    const transactionManagerFlow = httpsCallable(functions, 'transactionManagerFlowFn');
 
     const agentResult = (await transactionManagerFlow({
       rawInput: input,

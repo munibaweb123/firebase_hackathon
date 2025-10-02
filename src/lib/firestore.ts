@@ -62,7 +62,7 @@ export async function addTransaction(
       };
   }
   try {
-    const categorizeTransactionFlow = httpsCallable(functions, 'categorizeTransactionFlow');
+    const categorizeTransactionFlow = httpsCallable(functions, 'categorizeTransactionFlowFn');
 
     const { data: categorized } = await categorizeTransactionFlow({ text: `${transactionData.description} ${transactionData.amount}` });
 

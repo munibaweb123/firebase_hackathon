@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -53,7 +54,7 @@ export function SpendingAnalysis({ transactions, budgets }: SpendingAnalysisProp
     };
 
     try {
-      const spendingInsightsWithAIFlow = httpsCallable(functions, 'spendingInsightsWithAIFlow');
+      const spendingInsightsWithAIFlow = httpsCallable(functions, 'spendingInsightsWithAIFlowFn');
       const response = (await spendingInsightsWithAIFlow(analysisData)).data as any;
       setAiResponse(response);
     } catch (e) {
