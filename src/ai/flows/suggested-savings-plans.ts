@@ -1,4 +1,3 @@
-// src/ai/flows/suggested-savings-plans.ts
 'use server';
 
 /**
@@ -10,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const SavingsPlansInputSchema = z.object({
   income: z.number().describe('The user\'s monthly income.'),
@@ -62,3 +61,5 @@ const suggestedSavingsPlansFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

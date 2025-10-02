@@ -10,7 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const SpendingInsightsWithAIInputSchema = z.object({
   income: z.number().describe('The total income for the period.'),
@@ -83,3 +83,5 @@ const spendingInsightsWithAIFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

@@ -8,7 +8,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const TranscribeAudioInputSchema = z.object({
   audio: z
@@ -56,3 +56,5 @@ const transcribeAudioFlow = ai.defineFlow(
     return { text };
   }
 );
+
+    

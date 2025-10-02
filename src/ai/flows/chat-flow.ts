@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 import wav from 'wav';
 import { addTransaction as saveTransactionToDb } from '@/lib/firestore';
 import { categorizeTransaction } from './categorize-transaction-flow';
@@ -267,3 +267,5 @@ Core Instructions:
     }
   }
 );
+
+    
