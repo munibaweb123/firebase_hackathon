@@ -1,0 +1,13 @@
+---
+model: googleai/gemini-2.5-flash
+config:
+  temperature: 0.0
+input:
+  schema:
+    transaction: object
+output:
+  schema:
+    risk_score: number
+    categories: array
+---
+Analyze the following transaction and return a JSON object with a numeric "risk_score" (0-100) and list of suggested "categories". Transaction: {{transaction}}
