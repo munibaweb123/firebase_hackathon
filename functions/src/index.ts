@@ -124,7 +124,7 @@ export const categorizeTransactionFlowFn = functions.https.onCall(onCallGenkit(a
 // Chat Flow
 async function toWav(pcmData: Buffer, channels = 1, rate = 24000, sampleWidth = 2): Promise<string> {
   return new Promise((resolve, reject) => {
-    const writer = new wav.Writer({ channels, sampleRate: rate, bitDepth: sampleWidth * 8 });
+    const writer = new wav.Writer({ channels, sampleRate: rate, bitDepth = sampleWidth * 8 });
     let bufs: any[] = [];
     writer.on('error', reject);
     writer.on('data', (d) => bufs.push(d));
@@ -213,10 +213,9 @@ const chatFlow = ai.defineFlow(
           config: { maxOutputTokens: 256 },
           system: `You are Wally, a friendly financial assistant. If the user's question is about policies, terms, or how the app works, use the provided CONTEXT to answer. Otherwise, act as a general financial assistant.`,
         });
-        const responseText = llmResponse.text;
-        const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
         
         async function generateAudio(text: string): Promise<string> {
+          if (!text || text.trim() === '') return '';
           try {
             const { media } = await ai.generate({
               model: 'googleai/gemini-2.5-flash-preview-tts',
@@ -234,15 +233,18 @@ const chatFlow = ai.defineFlow(
         }
 
         if (llmResponse.toolRequests.length > 0) {
-          const toolResponse = llmResponse.toolRequests[0];
-          const toolResult = await addTransactionTool(toolResponse.input);
-          const messageToUser = toolResult.message;
-          const responseAudio = await generateAudio(messageToUser);
-          return { message: messageToUser, audio: responseAudio };
+            const toolRequest = llmResponse.toolRequests[0];
+            const toolResult = await addTransactionTool(toolRequest.input); // This needs to be more generic if more tools are added
+            const messageToUser = toolResult.message;
+            const responseAudio = await generateAudio(messageToUser);
+            return { message: messageToUser, audio: responseAudio };
         }
 
+        const responseText = llmResponse.text;
+        const fallbackMessage = "I didn’t quite get that. Can you rephrase?";
+        
         if (!responseText || responseText.trim() === '') {
-          return { message: fallbackMessage, audio: '' };
+          return { message: fallbackMessage, audio: await generateAudio(fallbackMessage) };
         }
         
         const responseAudio = await generateAudio(responseText);
