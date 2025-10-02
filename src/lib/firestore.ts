@@ -39,6 +39,9 @@ export const getRecurringExpensesCollection = (userId: string) =>
 export const getInsightsCollection = (userId: string) =>
     collection(getUsersCollection(), `${userId}/insights`);
 
+export const getPaymentsCollection = (userId: string) =>
+    collection(getUsersCollection(), `${userId}/payments`);
+
 
 /**
  * A streamlined function to add a transaction from a tool call.
@@ -245,5 +248,29 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
     }
     // Return empty array to prevent app from crashing
     return [];
+  }
+}
+
+/**
+ * Logs a payment transaction to Firestore.
+ * @param paymentData - The payment data to log.
+ */
+export async function logPayment(paymentData: {
+  uid: string;
+  amount: number;
+  currency: string;
+  riskScore: number;
+  status: 'ok' | 'flagged' | 'error';
+  error?: string;
+}): Promise<void> {
+  try {
+    const paymentsCol = getPaymentsCollection(paymentData.uid);
+    await addDoc(paymentsCol, {
+      ...paymentData,
+      createdAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error logging payment to Firestore:', error);
+    // Don't throw here to avoid crashing the parent flow
   }
 }
