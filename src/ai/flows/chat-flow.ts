@@ -13,6 +13,7 @@ import {z} from 'genkit';
 import wav from 'wav';
 import { addTransaction as saveTransactionToDb } from '@/lib/firestore';
 import { categorizeTransaction } from './categorize-transaction-flow';
+import { stripe } from '@/lib/stripe'; // Correctly import from server-only utility
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'model']),
@@ -91,6 +92,31 @@ const addTransactionTool = ai.defineTool(
   }
 );
 
+const createPaymentTool = ai.defineTool(
+  {
+    name: 'createPaymentIntent',
+    description: 'Create a Stripe PaymentIntent and return client_secret',
+    inputSchema: z.object({
+      amount: z.number().int(),
+      currency: z.string().default('usd'),
+      customerId: z.string().optional(),
+      metadata: z.record(z.string()).optional(),
+    }),
+    outputSchema: z.object({ clientSecret: z.string() }),
+  },
+  async ({ amount, currency, customerId, metadata }) => {
+    // server-side only: use stripe secret key
+    const pi = await stripe.paymentIntents.create({
+      amount,
+      currency,
+      customer: customerId,
+      payment_method_types: ['card'],
+      metadata,
+    });
+    return { clientSecret: pi.client_secret! };
+  }
+);
+
 
 async function toWav(
   pcmData: Buffer,
@@ -139,7 +165,7 @@ const chatFlow = ai.defineFlow(
       const llmResponse = await ai.generate({
         history,
         prompt: cleanedMessage,
-        tools: [addTransactionTool],
+        tools: [addTransactionTool, createPaymentTool],
         toolConfig: {
            custom: (toolRequest) => {
              if (toolRequest.name === 'addTransaction') {
