@@ -7,7 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles } from 'lucide-react';
-import { hello } from '@/ai/flows/hello-flow';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 
 const teamMembers = [
   { name: 'Muniba Ahmed', role: 'Team Lead' },
@@ -25,7 +26,8 @@ export default function AboutPage() {
     setLoading(true);
     setGreeting('');
     try {
-      const response = await hello({ name: 'Studio User' });
+      const helloFlow = httpsCallable(functions, 'helloFlowFn');
+      const response = (await helloFlow({ name: 'Studio User' })).data as any;
       setGreeting(response.greeting);
     } catch (error) {
       console.error('Error fetching greeting:', error);

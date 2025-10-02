@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { Badge } from './ui/badge';
-import { transcribeAudio } from '@/ai/flows/speech-to-text-flow';
-import { chat } from '@/ai/flows/chat-flow';
 import type { Transaction, Budget } from '@/lib/types';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
+
 
 interface Message {
   role: 'user' | 'model';
@@ -59,20 +60,26 @@ export function VoiceAgent({ userId, pastTransactions, budgets }: VoiceAgentProp
         reader.onloadend = async () => {
           const base64Audio = reader.result as string;
           try {
+            const transcribeAudioFlow = httpsCallable(functions, 'transcribeAudioFlow');
+            const chatFlow = httpsCallable(functions, 'chatFlow');
+
             // 1. Transcribe Audio
-            const { text: transcribedText } = await transcribeAudio({ audio: base64Audio });
+            const transcriptionResult = (await transcribeAudioFlow({ audio: base64Audio })).data as any;
+            const transcribedText = transcriptionResult.text;
+
 
             if(transcribedText && transcribedText.trim() !== '' && userId) {
                setTranscript((prev) => [...prev, { role: 'user', content: transcribedText }]);
               
               // 2. Get Chat Response (which may use tools)
-              const chatResponse = await chat({
+              const chatResponse = (await chatFlow({
                 userId: userId,
                 message: transcribedText,
                 history: transcript.slice(-10), // Pass last 10 messages as history
                 pastTransactions: pastTransactions.map(t => ({...t, date: t.date.toISOString()})),
                 budgets: budgets
-              });
+              })).data as any;
+
 
               if (chatResponse.message) {
                 setTranscript((prev) => [...prev, { role: 'model', content: chatResponse.message }]);

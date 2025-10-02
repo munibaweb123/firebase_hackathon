@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -6,10 +5,9 @@ import {
   addDoc,
   Timestamp,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, functions } from './firebase';
 import type { Budget, Transaction } from './types';
-import { processTransaction as runManagerAgent } from '@/ai/flows/transaction-manager-flow';
-import { mockBudgets, incomeCategories } from './data';
+import { incomeCategories } from './data';
 import { 
     getTransactions, 
     getTransactionsCollection, 
@@ -17,6 +15,7 @@ import {
     getInsightsCollection,
     getAlertsCollection,
 } from './firestore';
+import { httpsCallable } from 'firebase/functions';
 
 /**
  * Processes a raw transaction input (either from text or structured data),
@@ -35,14 +34,16 @@ export async function processAndSaveTransaction(
 
   try {
     const pastTransactions = await getTransactions(userId);
-    const budgets: Budget[] = mockBudgets; 
+    const budgets: Budget[] = []; // Simplified for now
 
-    // 1. Get structured data from the AI Manager Agent
-    const agentResult = await runManagerAgent({
+    const transactionManagerFlow = httpsCallable(functions, 'transactionManagerFlow');
+
+    const agentResult = (await transactionManagerFlow({
       rawInput: input,
-      pastTransactions: pastTransactions.map(t => ({...t, date: new Date(t.date)})),
+      pastTransactions: pastTransactions.map(t => ({...t, date: t.date.toISOString()})), // Dates need to be serializable
       budgets: budgets,
-    });
+    })).data as any;
+
 
     const { transaction, category, recurring, insights, alerts } = agentResult;
     const type = incomeCategories.includes(category) ? 'income' : 'expense';

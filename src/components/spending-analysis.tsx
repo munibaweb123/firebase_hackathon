@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import { spendingInsightsWithAI } from '@/ai/flows/spending-insights-ai';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Bot, Lightbulb, Sparkles, Terminal } from 'lucide-react';
 import type { Transaction, Budget, SpendingAnalysisData } from '@/lib/types';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 
 interface SpendingAnalysisProps {
   transactions: Transaction[];
@@ -52,7 +53,8 @@ export function SpendingAnalysis({ transactions, budgets }: SpendingAnalysisProp
     };
 
     try {
-      const response = await spendingInsightsWithAI(analysisData);
+      const spendingInsightsWithAIFlow = httpsCallable(functions, 'spendingInsightsWithAIFlow');
+      const response = (await spendingInsightsWithAIFlow(analysisData)).data as any;
       setAiResponse(response);
     } catch (e) {
       console.error(e);

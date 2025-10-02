@@ -15,8 +15,10 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Budget, Transaction, TransactionData } from './types';
-import { categorizeTransaction } from '@/ai/flows/categorize-transaction-flow';
 import { incomeCategories } from './data';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from './firebase';
+
 
 // Collection References
 export const getUsersCollection = () => collection(db, 'users');
@@ -60,21 +62,24 @@ export async function addTransaction(
       };
   }
   try {
-    // 1. Determine type
-    const type = incomeCategories.includes(transactionData.category) ? 'income' : 'expense';
+    const categorizeTransactionFlow = httpsCallable(functions, 'categorizeTransactionFlow');
+
+    const { data: categorized } = await categorizeTransactionFlow({ text: `${transactionData.description} ${transactionData.amount}` });
+
+    const type = incomeCategories.includes((categorized as any).category) ? 'income' : 'expense';
 
     // 2. Save to Firestore
     const transactionsCol = getTransactionsCollection(userId);
     await addDoc(transactionsCol, {
-      description: transactionData.description,
-      amount: transactionData.amount,
-      category: transactionData.category,
+      description: (categorized as any).description,
+      amount: (categorized as any).amount,
+      category: (categorized as any).category,
       type: type,
       date: Timestamp.now(),
     });
      return {
         success: true,
-        message: `Transaction "${transactionData.description}" was added successfully.`,
+        message: `Transaction "${(categorized as any).description}" was added successfully.`,
       };
   } catch (error) {
     console.error('Error adding transaction via tool:', error);
